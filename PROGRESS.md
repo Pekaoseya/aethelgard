@@ -1,6 +1,6 @@
 # 艾瑟雅大陆开发进度总结
 
-**最后更新：2026-04-25 12:12**
+**最后更新：2026-04-25 12:30**
 
 ---
 
@@ -32,7 +32,13 @@
 ### Docker部署（2026-04-25）
 - ✅ Dockerfile已创建
 - ✅ docker-compose.yml（开发版3002 + 测试版3003）
-- 🛠️ Docker镜像构建中...
+- ❌ Docker Hub网络超时，镜像构建失败
+- 🛠️ 待网络恢复后重新构建
+
+### 静态服务（2026-04-25）
+- ✅ 端口80静态文件服务运行中
+- ✅ 修复素材黑屏问题
+- ❌ natapp客户端文件被清理，需重新上传
 
 ### 角色系统（6个"智障"AI）
 - 🧐 杠精博士 - 死板纠正语法
@@ -64,7 +70,7 @@
 3. **LLM整合** - 把LLM真正接入v1.4的每个角色
 
 ### 中优先级
-4. GitHub同步
+4. Docker镜像构建（网络恢复后）
 5. natapp开机自启配置
 
 ---
@@ -74,6 +80,10 @@
 ```
 KIMI_API_KEY=sk-eqqjSTwcPht4AeglGgaMu5EilIWuwO7GpwO2A9aPa5F6LhQA
 ```
+
+### GitHub仓库
+- 地址：https://github.com/Pekaoseya/aethelgard
+- 最新提交：Docker配置 + UI优化 + PROGRESS.md
 
 ---
 

@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🎮 AI智障探险队 - 全屏版</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    :root {
+      --bg-dark: #0a0a12;
+      --bg-panel: #12121a;
+      --bg-card: #1a1a28;
+      --neon-cyan: #00fff5;
+      --neon-pink: #ff00ff;
+      --neon-yellow: #ffff00;
+      --neon-green: #00ff00;
+      --neon-red: #ff3366;
+      --neon-purple: #9966ff;
+      --neon-orange: #ff9900;
+      --neon-gold: #ffd700;
+      --text-main: #e0e0e0;
+      --text-dim: #666680;
+      --border-color: #333355;
+    }
+    
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Press Start 2P', monospace;
+      background: var(--bg-dark);
+      color: var(--text-main);
+    }
+    
+    /* 扫描线效果 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.1) 2px, rgba(0, 0, 0, 0.1) 4px);
+      pointer-events: none;
+      z-index: 9999;
+    }
+    
+    /* 全屏布局 */
+    .game-container {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-rows: 60px 1fr 80px;
+      grid-template-columns: 1fr 320px;
+      gap: 0;
+    }
+    
+    /* 顶部状态栏 */
+    .header-bar {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, var(--bg-panel), var(--bg-dark));
+      border-bottom: 3px solid var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 0 20px var(--neon-cyan);
+    }
+    
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .live-dot {
+      width: 12px; height: 12px;
+      background: var(--neon-red);
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    
+    .live-text {
+      font-size: 0.6rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 10px var(--neon-cyan);
+    }
+    
+    .title {
+      font-size: 0.8rem;
+      color: var(--neon-yellow);
+      text-shadow: 0 0 15px var(--neon-yellow);
+    }
+    
+    .header-stats {
+      display: flex;
+      gap: 25px;
+      font-size: 0.45rem;
+    }
+    
+    .stat { color: var(--text-dim); }
+    .stat span { color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); }
+    
+    /* 主游戏区域 */
+    .game-area {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #050510, #101020);
+    }
+    
+    /* 地图画布 */
+    #gameCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* 角色对话气泡 */
+    .speech-bubble {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid var(--neon-purple);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 0.4rem;
+      color: var(--text-main);
+      max-width: 150px;
+      pointer-events: none;
+      z-index: 100;
+      animation: bubble-rise 3s forwards;
+      box-shadow: 0 0 15px var(--neon-purple);
+    }
+    
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 20px;
+      border: 6px solid transparent;
+      border-top-color: var(--neon-purple);
+    }
+    
+    @keyframes bubble-rise {
+      0% { opacity: 0; transform: translateY(10px); }
+      10% { opacity: 1; transform: translateY(0); }
+      80% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-30px); }
+    }
+    
+    /* 伤害数字 */
+    .damage-number {
+      position: absolute;
+      font-size: 0.6rem;
+      font-weight: bold;
+      color: var(--neon-red);
+      text-shadow: 0 0 10px var(--neon-red), 2px 2px 0 #000;
+      pointer-events: none;
+      animation: damage-float 1s forwards;
+      z-index: 200;
+    }
+    
+    @keyframes damage-float {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      50% { opacity: 1; transform: translateY(-30px) scale(1.3); }
+      100% { opacity: 0; transform: translateY(-50px) scale(0.8); }
+    }
+    
+    /* 攻击特效 */
+    .attack-effect {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: attack-burst 0.3s forwards;
+      z-index: 150;
+    }
+    
+    @keyframes attack-burst {
+      0% { transform: scale(0); opacity: 1; box-shadow: 0 0 20px currentColor; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+    
+    /* 事件弹窗 */
+    .event-popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: var(--bg-panel);
+      border: 4px solid var(--neon-gold);
+      padding: 30px 50px;
+      text-align: center;
+      z-index: 500;
+      animation: popup-zoom 2s forwards;
+      box-shadow: 0 0 50px var(--neon-gold);
+    }
+    
+    .event-popup.boss { border-color: var(--neon-red); box-shadow: 0 0 50px var(--neon-red); animation: popup-zoom 2s forwards, boss-shake 0.1s infinite; }
+    .event-popup.chest { border-color: var(--neon-yellow); box-shadow: 0 0 50px var(--neon-yellow); }
+    .event-popup.kill { border-color: var(--neon-green); box-shadow: 0 0 50px var(--neon-green); }
+    
+    @keyframes popup-zoom {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(1); }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    }
+    
+    @keyframes boss-shake {
+      0%, 100% { margin-left: 0; }
+      25% { margin-left: -5px; }
+      75% { margin-left: 5px; }
+    }
+    
+    .popup-title { font-size: 1rem; color: var(--neon-gold); margin-bottom: 10px; text-shadow: 0 0 20px var(--neon-gold); }
+    .popup-subtitle { font-size: 0.5rem; color: var(--text-main); }
+    
+    /* 弹幕区域 */
+    .danmaku-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    .danmaku {
+      position: absolute;
+      white-space: nowrap;
+      font-size: 0.5rem;
+      color: white;
+      text-shadow: 1px 1px 2px black;
+      animation: danmaku-move 8s linear forwards;
+    }
+    
+    @keyframes danmaku-move {
+      0% { transform: translateX(100%); opacity: 0.8; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateX(-100%); opacity: 0; }
+    }
+    
+    /* 右侧面板 */
+    .side-panel {
+      background: var(--bg-panel);
+      border-left: 3px solid var(--neon-cyan);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .panel-section {
+      border-bottom: 2px solid var(--border-color);
+      padding: 10px;
+    }
+    
+    .panel-title {
+      font-size: 0.45rem;
+      color: var(--neon-yellow);
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px var(--neon-yellow);
+    }
+    
+    /* Agent状态 */
+    .agents-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    
+    .agent-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: var(--bg-card);
+      margin-bottom: 6px;
+      border: 2px solid var(--border-color);
+      transition: all 0.3s;
+    }
+    
+    .agent-item:hover { border-color: var(--neon-purple); }
+    .agent-item.dead { opacity: 0.3; }
+    
+    .agent-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 8px var(--neon-cyan));
+    }
+    
+    .agent-icon.glitched { animation: glitch 0.3s infinite; }
+    .agent-icon.smart { filter: drop-shadow(0 0 15px var(--neon-gold)); }
+    
+    @keyframes glitch {
+      0%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+      25% { transform: translate(-3px, 2px); filter: hue-rotate(90deg); }
+      50% { transform: translate(3px, -2px); filter: hue-rotate(180deg); }
+      75% { transform: translate(-2px, -2px); filter: hue-rotate(270deg); }
+    }
+    
+    .agent-info { flex: 1; }
+    .agent-name { font-size: 0.4rem; color: var(--neon-yellow); margin-bottom: 4px; }
+    
+    .hp-bar {
+      height: 8px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+    
+    .hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-green), var(--neon-cyan));
+      transition: width 0.3s;
+    }
+    
+    .hp-fill.low { background: linear-gradient(90deg, var(--neon-red), var(--neon-orange)); }
+    
+    .agent-effect {
+      font-size: 0.3rem;
+      padding: 2px 4px;
+      border-radius: 3px;
+      margin-right: 3px;
+    }
+    
+    .effect-glitch { background: var(--neon-pink); color: white; }
+    .effect-smart { background: var(--neon-gold); color: black; }
+    .effect-phase { background: var(--neon-purple); color: white; }
+    
+    /* BOSS血条 */
+    .boss-bar {
+      background: var(--bg-card);
+      border: 2px solid var(--neon-gold);
+      padding: 10px;
+      display: none;
+    }
+    
+    .boss-bar.active { display: block; animation: boss-pulse 1s infinite; }
+    
+    @keyframes boss-pulse {
+      0%, 100% { box-shadow: 0 0 10px var(--neon-gold); }
+      50% { box-shadow: 0 0 30px var(--neon-red); }
+    }
+    
+    .boss-name { font-size: 0.5rem; color: var(--neon-gold); text-align: center; margin-bottom: 8px; }
+    
+    .boss-hp-container {
+      height: 20px;
+      background: rgba(0,0,0,0.5);
+      border: 2px solid var(--neon-gold);
+    }
+    
+    .boss-hp-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-red), var(--neon-gold));
+      transition: width 0.5s;
+    }
+    
+    /* 事件日志 */
+    .events-scroll {
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 0.35rem;
+      line-height: 1.6;
+    }
+    
+    .events-scroll::-webkit-scrollbar { width: 4px; }
+    .events-scroll::-webkit-scrollbar-thumb { background: var(--neon-cyan); }
+    
+    .event-entry { padding: 4px 0; border-bottom: 1px dashed var(--border-color); }
+    .event-entry.combat { color: var(--neon-red); }
+    .event-entry.kill { color: var(--neon-green); }
+    .event-entry.chest { color: var(--neon-yellow); }
+    .event-entry.donation { color: var(--neon-gold); }
+    .event-entry.boss { color: var(--neon-red); animation: blink 0.5s infinite; }
+    .event-entry.defect { color: var(--neon-orange); }
+    
+    /* 底部控制栏 */
+    .control-bar {
+      grid-column: 1 / -1;
+      background: linear-gradient(0deg, var(--bg-panel), var(--bg-dark));
+      border-top: 3px solid var(--neon-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+    }
+    
+    .control-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    
+    .btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.4rem;
+      padding: 10px 20px;
+      border: 2px solid;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--bg-card);
+    }
+    
+    .btn-primary { border-color: var(--neon-green); color: var(--neon-green); }
+    .btn-primary:hover { background: var(--neon-green); color: var(--bg-dark); box-shadow: 0 0 20px var(--neon-green); }
+    
+    .btn-secondary { border-color: var(--neon-cyan); color: var(--neon-cyan); }
+    .btn-secondary:hover { background: var(--neon-cyan); color: var(--bg-dark); }
+    
+    .btn-danger { border-color: var(--neon-red); color: var(--neon-red); }
+    .btn-danger:hover { background: var(--neon-red); color: white; }
+    
+    /* 打赏按钮 */
+    .donation-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .donate-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.35rem;
+      padding: 8px 12px;
+      border: 2px solid var(--neon-gold);
+      color: var(--neon-gold);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .donate-btn:hover {
+      background: var(--neon-gold);
+      color: var(--bg-dark);
+      box-shadow: 0 0 15px var(--neon-gold);
+    }
+    
+    /* 投票按钮 */
+    .vote-buttons {
+      display: flex;
+      gap: 6px;
+    }
+    
+    .vote-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.35rem;
+      padding: 8px 12px;
+      border: 2px solid var(--neon-pink);
+      color: var(--neon-pink);
+      background: var(--bg-card);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .vote-btn:hover, .vote-btn.selected {
+      background: var(--neon-pink);
+      color: var(--bg-dark);
+    }
+    
+    /* 打赏/弹幕输入 */
+    .input-group {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .danmaku-input {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.4rem;
+      padding: 8px 12px;
+      border: 2px solid var(--neon-purple);
+      background: var(--bg-card);
+      color: var(--text-main);
+      width: 180px;
+    }
+    
+    .danmaku-input::placeholder { color: var(--text-dim); }
+    
+    /* 响应式 */
+    @media (max-width: 900px) {
+      .game-container { grid-template-columns: 1fr; grid-template-rows: 50px 1fr 120px 60px; }
+      .side-panel { display: none; }
+      .header-stats { font-size: 0.35rem; gap: 15px; }
+      .title { font-size: 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <!-- 顶部状态栏 -->
+    <header class="header-bar">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span class="live-text">LIVE</span>
+      </div>
+      <h1 class="title">🎮 AI智障探险队</h1>
+      <div class="header-stats">
+        <div class="stat">TICK: <span id="tickCount">0</span></div>
+        <div class="stat">👁️ <span id="viewerCount">0</span></div>
+        <div class="stat">⚔️ <span id="killCount">0</span></div>
+        <div class="stat">📦 <span id="chestCount">0</span></div>
+      </div>
+    </header>
+    
+    <!-- 主游戏区域 -->
+    <div class="game-area" id="gameArea">
+      <canvas id="gameCanvas"></canvas>
+      <div class="danmaku-container" id="danmakuContainer"></div>
+    </div>
+    
+    <!-- 右侧面板 -->
+    <aside class="side-panel">
+      <div class="panel-section">
+        <div class="panel-title">👥 探险队</div>
+        <div id="agentsList"></div>
+      </div>
+      
+      <div class="boss-bar" id="bossBar">
+        <div class="boss-name" id="bossName">🐉 虚空巨龙</div>
+        <div class="boss-hp-container">
+          <div class="boss-hp-fill" id="bossHpFill" style="width: 100%"></div>
+        </div>
+      </div>
+      
+      <div class="panel-section" style="flex: 1; overflow: hidden;">
+        <div class="panel-title">📜 事件</div>
+        <div class="events-scroll" id="eventsScroll"></div>
+      </div>
+    </aside>
+    
+    <!-- 底部控制栏 -->
+    <footer class="control-bar">
+      <div class="control-group">
+        <button class="btn btn-primary" id="btnStart">▶</button>
+        <button class="btn btn-secondary" id="btnPause">⏸</button>
+        <button class="btn btn-secondary" id="btnStep">⏭</button>
+      </div>
+      
+      <div class="donation-buttons">
+        <button class="donate-btn" onclick="sendDonation('逻辑病毒')">🧪 病毒</button>
+        <button class="donate-btn" onclick="sendDonation('物理引擎失效')">👻 穿墙</button>
+        <button class="donate-btn" onclick="sendDonation('智商插件')">🧠 聪明</button>
+        <button class="donate-btn" onclick="sendDonation('召唤BOSS')">🐉 BOSS</button>
+      </div>
+      
+      <div class="vote-buttons">
+        <button class="vote-btn" onclick="castVote('攻击')">⚔️攻</button>
+        <button class="vote-btn" onclick="castVote('逃跑')">🏃逃</button>
+        <button class="vote-btn" onclick="castVote('搜索')">🔍搜</button>
+        <button class="vote-btn" onclick="castVote('休息')">💤休</button>
+      </div>
+      
+      <div class="input-group">
+        <input type="text" class="danmaku-input" id="danmakuInput" placeholder="发弹幕..." maxlength="30">
+        <button class="btn btn-secondary" onclick="sendDanmaku()">发送</button>
+      </div>
+    </footer>
+  </div>
+
+<script>
+const API_BASE = window.location.origin;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const gameArea = document.getElementById('gameArea');
+
+let gameState = {
+  tick: 0,
+  viewerCount: 0,
+  floors: [],
+  agents: {},
+  boss: null,
+  events: []
+};
+
+let animationId = null;
+let isRunning = false;
+let cellSize = 50;
+let mapOffsetX = 0;
+let mapOffsetY = 0;
+let animations = [];
+let latestEventId = 0;
+
+// 初始化
+function init() {
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+  
+  document.getElementById('btnStart').addEventListener('click', startGame);
+  document.getElementById('btnPause').addEventListener('click', pauseGame);
+  document.getElementById('btnStep').addEventListener('click', stepGame);
+  
+  document.getElementById('danmakuInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendDanmaku();
+  });
+  
+  fetchStatus();
+  startRenderLoop();
+}
+
+function resizeCanvas() {
+  canvas.width = gameArea.clientWidth;
+  canvas.height = gameArea.clientHeight;
+}
+
+// 获取状态
+async function fetchStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/api/ecosystem/status`);
+    const data = await res.json();
+    if (data.success) {
+      gameState = {
+        tick: data.tick,
+        viewerCount: data.viewerCount,
+        floors: data.floors || [],
+        agents: data.agents || {},
+        boss: data.currentBoss,
+        bossActive: data.bossActive,
+        donations: data.donations || []
+      };
+      updateUI();
+    }
+  } catch (e) {
+    console.log('等待服务器连接...');
+  }
+}
+
+// 获取事件
+async function fetchEvents() {
+  try {
+    const res = await fetch(`${API_BASE}/api/ecosystem/events?since=${latestEventId}`);
+    const data = await res.json();
+    if (data.events && data.events.length > 0) {
+      latestEventId = data.latestId || 0;
+      data.events.forEach(e => handleNewEvent(e));
+    }
+  } catch (e) {}
+}
+
+// 单步执行
+async function stepGame() {
+  try {
+    const res = await fetch(`${API_BASE}/api/ecosystem/tick`, { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      gameState.tick = data.tick;
+      document.getElementById('tickCount').textContent = data.tick;
+    }
+    await fetchStatus();
+    await fetchEvents();
+  } catch (e) {}
+}
+
+// 开始自动运行
+function startGame() {
+  if (isRunning) return;
+  isRunning = true;
+  document.getElementById('btnStart').style.background = 'var(--neon-green)';
+  document.getElementById('btnStart').style.color = 'var(--bg-dark)';
+  autoTick();
+}
+
+// 暂停
+function pauseGame() {
+  isRunning = false;
+  document.getElementById('btnStart').style.background = '';
+  document.getElementById('btnStart').style.color = '';
+}
+
+async function autoTick() {
+  if (!isRunning) return;
+  await stepGame();
+  setTimeout(autoTick, 300);
+}
+
+// 渲染循环
+function startRenderLoop() {
+  function render() {
+    draw();
+    animationId = requestAnimationFrame(render);
+  }
+  render();
+}
+
+// 绘制游戏
+function draw() {
+  ctx.fillStyle = '#0a0a12';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  if (gameState.floors.length === 0) {
+    ctx.fillStyle = '#00fff5';
+    ctx.font = '20px "Press Start 2P"';
+    ctx.textAlign = 'center';
+    ctx.fillText('正在连接服务器...', canvas.width / 2, canvas.height / 2);
+    return;
+  }
+  
+  const floor = gameState.floors[0];
+  if (!floor) return;
+  
+  // 计算地图居中
+  const mapWidth = floor.size * cellSize;
+  const mapHeight = floor.size * cellSize;
+  mapOffsetX = (canvas.width - mapWidth) / 2;
+  mapOffsetY = (canvas.height - mapHeight) / 2;
+  
+  // 绘制地形
+  for (let y = 0; y < floor.size; y++) {
+    for (let x = 0; x < floor.size; x++) {
+      const cell = floor.maze[y][x];
+      const px = mapOffsetX + x * cellSize;
+      const py = mapOffsetY + y * cellSize;
+      
+      // 地形颜色
+      switch (cell.terrain) {
+        case 'grass': ctx.fillStyle = '#1a3a1a'; break;
+        case 'sand': ctx.fillStyle = '#3a3520'; break;
+        case 'stone': ctx.fillStyle = '#2a2a3a'; break;
+        case 'water': ctx.fillStyle = '#1a2a4a'; break;
+        default: ctx.fillStyle = '#1a1a2a';
+      }
+      ctx.fillRect(px, py, cellSize, cellSize);
+      
+      // 绘制格子边框
+      ctx.strokeStyle = 'rgba(0, 255, 245, 0.1)';
+      ctx.strokeRect(px, py, cellSize, cellSize);
+      
+      // 绘制内容
+      if (cell.type === 'wall') {
+        drawWall(px, py);
+      } else if (cell.type === 'exit') {
+        drawExit(px, py);
+      }
+    }
+  }
+  
+  // 绘制怪物
+  floor.monsters.forEach(m => {
+    const px = mapOffsetX + m.x * cellSize + cellSize / 2;
+    const py = mapOffsetY + m.y * cellSize + cellSize / 2;
+    drawMonster(px, py, m);
+  });
+  
+  // 绘制宝箱
+  floor.chests.filter(c => !c.opened).forEach(c => {
+    const px = mapOffsetX + c.x * cellSize + cellSize / 2;
+    const py = mapOffsetY + c.y * cellSize + cellSize / 2;
+    drawChest(px, py);
+  });
+  
+  // 绘制BOSS
+  if (gameState.bossActive && gameState.boss) {
+    const px = mapOffsetX + gameState.boss.x * cellSize + cellSize / 2;
+    const py = mapOffsetY + gameState.boss.y * cellSize + cellSize / 2;
+    drawBoss(px, py);
+  }
+  
+  // 绘制Agent
+  floor.agents.forEach(a => {
+    const px = mapOffsetX + a.pos.x * cellSize + cellSize / 2;
+    const py = mapOffsetY + a.pos.y * cellSize + cellSize / 2;
+    drawAgent(px, py, a);
+  });
+  
+  // 绘制动画效果
+  drawAnimations();
+}
+
+// 绘制墙壁
+function drawWall(x, y) {
+  ctx.fillStyle = '#333344';
+  ctx.fillRect(x + 2, y + 2, cellSize - 4, cellSize - 4);
+  
+  ctx.strokeStyle = '#444466';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x + 4, y + 4, cellSize - 8, cellSize - 8);
+}
+
+// 绘制出口
+function drawExit(x, y) {
+  ctx.fillStyle = '#003300';
+  ctx.fillRect(x + 5, y + 5, cellSize - 10, cellSize - 10);
+  
+  ctx.fillStyle = '#00ff00';
+  ctx.font = `${cellSize * 0.6}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🚪', x + cellSize / 2, y + cellSize / 2);
+}
+
+// 绘制怪物
+function drawMonster(x, y, m) {
+  const pulse = Math.sin(Date.now() / 200) * 0.1 + 1;
+  
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(pulse, pulse);
+  
+  ctx.fillStyle = '#ff3366';
+  ctx.font = `${cellSize * 0.7}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('👹', 0, 0);
+  
+  ctx.restore();
+  
+  // 血条
+  const hpPercent = m.hp / m.maxHp;
+  ctx.fillStyle = '#333';
+  ctx.fillRect(x - 15, y + cellSize / 2 - 5, 30, 6);
+  ctx.fillStyle = hpPercent > 0.3 ? '#00ff00' : '#ff0000';
+  ctx.fillRect(x - 15, y + cellSize / 2 - 5, 30 * hpPercent, 6);
+}
+
+// 绘制宝箱
+function drawChest(x, y) {
+  const bob = Math.sin(Date.now() / 300) * 3;
+  
+  ctx.fillStyle = '#ffd700';
+  ctx.font = `${cellSize * 0.6}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('📦', x, y + bob);
+}
+
+// 绘制BOSS
+function drawBoss(x, y) {
+  const shake = Math.sin(Date.now() / 100) * 3;
+  
+  ctx.save();
+  ctx.translate(shake, 0);
+  
+  ctx.fillStyle = '#ffd700';
+  ctx.font = `${cellSize * 1.2}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = '#ffd700';
+  ctx.shadowBlur = 20;
+  ctx.fillText('🐉', x, y);
+  
+  ctx.restore();
+}
+
+// 绘制Agent
+function drawAgent(x, y, agent) {
+  ctx.save();
+  
+  // 特效
+  if (agent.isGlitched) {
+    ctx.translate(Math.random() * 4 - 2, Math.random() * 4 - 2);
+  }
+  
+  // 阴影
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.beginPath();
+  ctx.ellipse(x, y + cellSize * 0.4, cellSize * 0.3, cellSize * 0.1, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // 角色
+  ctx.font = `${cellSize * 0.8}px serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  
+  if (agent.isSmart) {
+    ctx.shadowColor = '#ffd700';
+    ctx.shadowBlur = 15;
+  } else if (agent.isGlitched) {
+    ctx.shadowColor = '#ff00ff';
+    ctx.shadowBlur = 10;
+  }
+  
+  ctx.fillText(agent.emoji, x, y);
+  
+  // 名字
+  ctx.font = '8px "Press Start 2P"';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowBlur = 0;
+  ctx.fillText(agent.name.substring(0, 3), x, y + cellSize * 0.5);
+  
+  ctx.restore();
+  
+  // 血条
+  const hpPercent = agent.hp / agent.maxHp;
+  ctx.fillStyle = '#333';
+  ctx.fillRect(x - 15, y - cellSize / 2 - 5, 30, 5);
+  ctx.fillStyle = hpPercent > 0.3 ? '#00ff00' : '#ff0000';
+  ctx.fillRect(x - 15, y - cellSize / 2 - 5, 30 * hpPercent, 5);
+}
+
+// 处理新事件
+function handleNewEvent(e) {
+  // 添加到事件列表
+  gameState.events.unshift(e);
+  if (gameState.events.length > 50) gameState.events.pop();
+  
+  // 播放音效或特效
+  switch (e.type) {
+    case 'combat':
+      showDamage(e.details?.damage || 10, e.agentId);
+      break;
+    case 'kill':
+      showPopup('击杀!', `${e.agent}击杀了怪物!`, 'kill');
+      break;
+    case 'chest':
+      showPopup('开箱!', `${e.agent}获得宝物!`, 'chest');
+      break;
+    case 'boss_spawn':
+      showPopup('⚠️ BOSS出现!', '虚空巨龙降临!', 'boss');
+      break;
+    case 'boss_defeat':
+      showPopup('🎉 BOSS击败!', '获得全体奖励!', 'kill');
+      break;
+  }
+  
+  // 说话气泡
+  if (e.agent && e.message) {
+    showSpeechBubble(e.agent, e.message);
+  }
+  
+  // 弹幕
+  if (e.type === 'donation') {
+    showDanmaku(`${e.agent}: ${e.message}`);
+  }
+}
+
+// 显示伤害数字
+function showDamage(damage, agentId) {
+  const agent = findAgent(agentId);
+  if (!agent) return;
+  
+  const floor = gameState.floors[0];
+  if (!floor) return;
+  
+  const x = mapOffsetX + agent.pos.x * cellSize + cellSize / 2;
+  const y = mapOffsetY + agent.pos.y * cellSize;
+  
+  const dmgEl = document.createElement('div');
+  dmgEl.className = 'damage-number';
+  dmgEl.textContent = `-${damage}`;
+  dmgEl.style.left = `${x + gameArea.getBoundingClientRect().left - gameArea.getBoundingClientRect().left}px`;
+  dmgEl.style.top = `${y}px`;
+  document.body.appendChild(dmgEl);
+  
+  setTimeout(() => dmgEl.remove(), 1000);
+}
+
+// 显示弹窗
+function showPopup(title, subtitle, type) {
+  const popup = document.createElement('div');
+  popup.className = `event-popup ${type}`;
+  popup.innerHTML = `<div class="popup-title">${title}</div><div class="popup-subtitle">${subtitle}</div>`;
+  gameArea.appendChild(popup);
+  setTimeout(() => popup.remove(), 2000);
+}
+
+// 显示对话气泡
+function showSpeechBubble(agentName, message) {
+  const agent = Object.values(gameState.agents).find(a => a.name === agentName);
+  if (!agent) return;
+  
+  const floor = gameState.floors[0];
+  if (!floor) return;
+  
+  const x = mapOffsetX + agent.pos.x * cellSize + cellSize / 2;
+  const y = mapOffsetY + agent.pos.y * cellSize - 20;
+  
+  const bubble = document.createElement('div');
+  bubble.className = 'speech-bubble';
+  bubble.textContent = message.substring(0, 20);
+  bubble.style.left = `${x}px`;
+  bubble.style.top = `${y}px`;
+  bubble.style.transform = 'translateX(-50%)';
+  gameArea.appendChild(bubble);
+  
+  setTimeout(() => bubble.remove(), 3000);
+}
+
+// 显示弹幕
+function showDanmaku(text) {
+  const container = document.getElementById('danmakuContainer');
+  const danmaku = document.createElement('div');
+  danmaku.className = 'danmaku';
+  danmaku.textContent = text;
+  danmaku.style.top = `${Math.random() * 70 + 10}%`;
+  danmaku.style.color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+  container.appendChild(danmaku);
+  
+  setTimeout(() => danmaku.remove(), 8000);
+}
+
+// 绘制动画
+function drawAnimations() {
+  const now = Date.now();
+  animations = animations.filter(anim => {
+    if (now > anim.endTime) return false;
+    
+    const progress = (anim.endTime - now) / anim.duration;
+    
+    if (anim.type === 'attack') {
+      ctx.beginPath();
+      ctx.arc(anim.x, anim.y, anim.radius * (1 - progress), 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(255, 0, 100, ${progress})`;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+    
+    return true;
+  });
+}
+
+// 更新UI
+function updateUI() {
+  document.getElementById('tickCount').textContent = gameState.tick;
+  document.getElementById('viewerCount').textContent = gameState.viewerCount;
+  
+  // Agent列表
+  const agentsList = document.getElementById('agentsList');
+  agentsList.innerHTML = '';
+  
+  const floor = gameState.floors[0];
+  if (floor) {
+    floor.agents.forEach(a => {
+      const div = document.createElement('div');
+      div.className = `agent-item ${a.status === 'dead' ? 'dead' : ''}`;
+      
+      let effects = '';
+      if (a.isGlitched) effects += '<span class="agent-effect effect-glitch">乱码</span>';
+      if (a.isSmart) effects += '<span class="agent-effect effect-smart">聪明</span>';
+      if (a.phaseThrough) effects += '<span class="agent-effect effect-phase">穿墙</span>';
+      
+      div.innerHTML = `
+        <span class="agent-icon ${a.isGlitched ? 'glitched' : ''} ${a.isSmart ? 'smart' : ''}">${a.emoji}</span>
+        <div class="agent-info">
+          <div class="agent-name">${a.name}</div>
+          <div class="hp-bar"><div class="hp-fill ${a.hp / a.maxHp < 0.3 ? 'low' : ''}" style="width: ${a.hp / a.maxHp * 100}%"></div></div>
+          ${effects}
+        </div>
+      `;
+      agentsList.appendChild(div);
+    });
+  }
+  
+  // BOSS血条
+  const bossBar = document.getElementById('bossBar');
+  if (gameState.bossActive && gameState.boss) {
+    bossBar.classList.add('active');
+    document.getElementById('bossHpFill').style.width = `${gameState.boss.hp / gameState.boss.maxHp * 100}%`;
+  } else {
+    bossBar.classList.remove('active');
+  }
+  
+  // 事件日志
+  const eventsScroll = document.getElementById('eventsScroll');
+  eventsScroll.innerHTML = gameState.events.slice(0, 20).map(e => 
+    `<div class="event-entry ${e.type}">${e.agentEmoji || '📍'} ${e.message.substring(0, 40)}</div>`
+  ).join('');
+  
+  // 统计
+  let kills = 0, chests = 0;
+  Object.values(gameState.agents).forEach(a => {
+    kills += a.killCount || 0;
+    chests += a.chestCount || 0;
+  });
+  document.getElementById('killCount').textContent = kills;
+  document.getElementById('chestCount').textContent = chests;
+}
+
+// 发送打赏
+async function sendDonation(effect) {
+  try {
+    await fetch(`${API_BASE}/api/donate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ effect, donor: '观众' })
+    });
+  } catch (e) {}
+}
+
+// 投票
+async function castVote(action) {
+  try {
+    await fetch(`${API_BASE}/api/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, voter: '观众' })
+    });
+  } catch (e) {}
+}
+
+// 发送弹幕
+function sendDanmaku() {
+  const input = document.getElementById('danmakuInput');
+  const text = input.value.trim();
+  if (text) {
+    showDanmaku(`观众: ${text}`);
+    input.value = '';
+  }
+}
+
+// 查找Agent
+function findAgent(agentId) {
+  const floor = gameState.floors[0];
+  if (!floor) return null;
+  return floor.agents.find(a => a.id === agentId);
+}
+
+// 启动
+init();
+setInterval(fetchStatus, 1000);
+setInterval(fetchEvents, 500);
+</script>
+</body>
+</html>

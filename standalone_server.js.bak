@@ -1,0 +1,804 @@
+/**
+ * 艾瑟雅大陆 - 独立游戏服务器
+ * 基于 src/app/api/tower/route.ts 提取的游戏逻辑
+ */
+
+const http = require('http');
+const url = require('url');
+
+// ============= 楼层配置 =============
+const FLOOR_NAMES = [
+  '新手草原', '幽暗森林', '迷雾沼泽', '荆棘之地', '翠绿山谷', '古老废墟', '诅咒墓穴', '幽灵古堡', '暗影洞穴', '烈焰山口',
+  '碎石荒原', '枯萎森林', '毒雾谷', '暗礁海岸', '荒芜沙漠', '炽热沙丘', '金色绿洲', '风蚀峡谷', '断崖绝壁', '风暴之巅',
+  '熔岩河流', '火山脚下', '灰烬平原', '熔岩之心', '黑曜石殿', '燃烧废墟', '烈焰祭坛', '地狱火海', '深渊入口', '深渊之眼',
+  '寒霜荒原', '冰封森林', '冰川裂隙', '极寒之地', '暴风雪原', '冰晶洞穴', '永恒冻土', '冰霜王座', '极北之门', '极寒深渊',
+];
+
+const TOWER_FLOORS = [];
+for (let i = 1; i <= 100; i++) {
+  TOWER_FLOORS.push({
+    floor: i,
+    name: FLOOR_NAMES[Math.floor((i - 1) / 10)] || `第${i}层`,
+    difficulty: 1 + (i - 1) * 0.05,
+    rewardExp: 100 + i * 10,
+    unlockLevel: Math.max(1, Math.floor(i / 10)),
+  });
+}
+
+// ============= 工具函数 =============
+function rollDice() {
+  return Math.floor(Math.random() * 100) + 1;
+}
+
+// ============= 类型定义 =============
+// 迷宫格子类型
+const CELL_TYPES = ['empty', 'wall', 'player', 'monster', 'boss', 'other_agent', 'exit', 'chest'];
+
+// 楼层会话
+class FloorSession {
+  constructor(floor, username) {
+    this.floor = floor;
+    this.username = username;
+    this.maze = [];
+    this.playerPos = { x: 1, y: 1 };
+    this.monsters = [];
+    this.chests = [];
+    this.exitPos = { x: 0, y: 0 };
+    this.otherAgents = [];
+    this.moves = 0;
+    this.startTime = Date.now();
+    
+    this.generateMaze();
+  }
+  
+  generateMaze() {
+    const size = 7 + Math.floor(this.floor / 20);
+    
+    // 初始化网格
+    for (let y = 0; y < size; y++) {
+      const row = [];
+      for (let x = 0; x < size; x++) {
+        if (x === 0 || y === 0 || x === size - 1 || y === size - 1) {
+          row.push({ type: 'wall', x, y });
+        } else {
+          row.push({ type: Math.random() < 0.2 ? 'wall' : 'empty', x, y });
+        }
+      }
+      this.maze.push(row);
+    }
+    
+    // 设置起点和出口
+    this.maze[1][1] = { type: 'player', x: 1, y: 1 };
+    const exitX = size - 2;
+    const exitY = size - 2;
+    this.maze[exitY][exitX] = { type: 'exit', x: exitX, y: exitY };
+    this.exitPos = { x: exitX, y: exitY };
+    
+    // 可放置格子
+    const emptyCells = [];
+    for (let y = 1; y < size - 1; y++) {
+      for (let x = 1; x < size - 1; x++) {
+        if (this.maze[y][x].type === 'empty' && !(x === 1 && y === 1) && !(x === exitX && y === exitY)) {
+          emptyCells.push({ x, y });
+        }
+      }
+    }
+    emptyCells.sort(() => Math.random() - 0.5);
+    
+    let idx = 0;
+    
+    // 宝箱 1-3个
+    const chestCount = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < chestCount && idx < emptyCells.length; i++, idx++) {
+      const cell = emptyCells[idx];
+      this.maze[cell.y][cell.x] = { type: 'chest', x: cell.x, y: cell.y, content: '宝箱' };
+      this.chests.push({ x: cell.x, y: cell.y, opened: false });
+    }
+    
+    // 小怪（普通层1-3个）
+    if (this.floor % 10 !== 0) {
+      const monsterNames = ['哥布林', '骷髅兵', '狼人', '食尸鬼', '暗影刺客'];
+      const monsterCount = 1 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < monsterCount && idx < emptyCells.length; i++, idx++) {
+        const cell = emptyCells[idx];
+        const level = Math.max(1, this.floor - 5 + Math.floor(Math.random() * 10));
+        const monsterHp = level * 20;
+        const name = monsterNames[Math.floor(Math.random() * monsterNames.length)];
+        this.maze[cell.y][cell.x] = { type: 'monster', x: cell.x, y: cell.y, content: name, level };
+        this.monsters.push({ x: cell.x, y: cell.y, name, level, hp: monsterHp, maxHp: monsterHp });
+      }
+    }
+    
+    // Boss层
+    if (this.floor % 10 === 0 && idx < emptyCells.length) {
+      const cell = emptyCells[idx];
+      const bossNames = ['暗影领主', '深渊魔龙', '死亡骑士长', '混沌之神', '永恒守护者'];
+      const bossName = bossNames[Math.floor(this.floor / 10) % bossNames.length];
+      const bossHp = this.floor * 50;
+      this.maze[cell.y][cell.x] = { type: 'boss', x: cell.x, y: cell.y, content: bossName, level: this.floor };
+      this.monsters.push({ x: cell.x, y: cell.y, name: bossName, level: this.floor, hp: bossHp, maxHp: bossHp });
+      idx++;
+    }
+    
+    // 其他Agent (20%概率)
+    if (Math.random() < 0.2 && idx < emptyCells.length) {
+      const cell = emptyCells[idx];
+      const agentNames = ['迷雾剑客', '暗夜猎手', '星辰法师', '铁壁守护', '疾风刺客'];
+      const name = agentNames[Math.floor(Math.random() * agentNames.length)];
+      this.maze[cell.y][cell.x] = { type: 'other_agent', x: cell.x, y: cell.y, content: name };
+      this.otherAgents.push({ x: cell.x, y: cell.y, name });
+    }
+  }
+}
+
+// ============= 会话存储 =============
+const activeSessions = new Map();
+
+// ============= 玩家数据存储 =============
+const playerData = new Map();
+
+// ============= 卡牌定义 =============
+const CARD_TEMPLATES = {
+  common: [
+    { name: '基础剑术', type: 'attack', value: 10, description: '造成10点伤害' },
+    { name: '初级护盾', type: 'defense', value: 5, description: '获得5点护盾' },
+    { name: '治疗药水', type: 'heal', value: 15, description: '恢复15点生命' },
+  ],
+  rare: [
+    { name: '烈焰斩', type: 'attack', value: 25, description: '造成25点伤害' },
+    { name: '寒冰护甲', type: 'defense', value: 15, description: '获得15点护盾' },
+    { name: '圣光治疗', type: 'heal', value: 30, description: '恢复30点生命' },
+  ],
+  epic: [
+    { name: '雷霆一击', type: 'attack', value: 50, description: '造成50点伤害' },
+    { name: '魔法壁垒', type: 'defense', value: 30, description: '获得30点护盾' },
+    { name: '生命绽放', type: 'heal', value: 60, description: '恢复60点生命' },
+  ],
+  legendary: [
+    { name: '龙息灭世', type: 'attack', value: 100, description: '造成100点伤害' },
+    { name: '神圣庇护', type: 'defense', value: 50, description: '获得50点护盾' },
+    { name: '凤凰涅槃', type: 'heal', value: 100, description: '恢复100点生命' },
+  ],
+};
+
+function generateCard(rarity) {
+  const templates = CARD_TEMPLATES[rarity] || CARD_TEMPLATES.common;
+  const template = templates[Math.floor(Math.random() * templates.length)];
+  return {
+    ...template,
+    id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    rarity,
+    obtainedAt: new Date().toISOString(),
+  };
+}
+
+// 初始化玩家数据
+function initPlayerData(username) {
+  if (!playerData.has(username)) {
+    playerData.set(username, {
+      username,
+      level: 1,
+      exp: 0,
+      expToNext: 100,
+      hp: 100,
+      maxHp: 100,
+      attack: 10,
+      defense: 5,
+      cards: [],
+      monstersDefeated: 0,
+      chestsOpened: 0,
+      floorsCleared: 0,
+      registeredAt: new Date().toISOString(),
+    });
+  }
+  return playerData.get(username);
+}
+
+// 添加经验值并检查升级
+function addExp(username, exp) {
+  const player = playerData.get(username);
+  if (!player) return null;
+  
+  player.exp += exp;
+  let leveledUp = false;
+  
+  while (player.exp >= player.expToNext) {
+    player.exp -= player.expToNext;
+    player.level++;
+    player.maxHp += 10;
+    player.hp = player.maxHp; // 升级满血
+    player.attack += 2;
+    player.defense += 1;
+    player.expToNext = Math.floor(player.expToNext * 1.5);
+    leveledUp = true;
+  }
+  
+  return { player, leveledUp };
+}
+
+// ============= API 处理 =============
+function handleRequest(req, res) {
+  const parsedUrl = url.parse(req.url, true);
+  const pathname = parsedUrl.pathname;
+  
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
+  
+  // 只处理 /api/tower 路径
+  if (!pathname.startsWith('/api/tower')) {
+  if (pathname === '/') {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`
+      <!DOCTYPE html>
+      <html><head><meta charset="utf-8"><title>艾瑟雅大陆</title></head>
+      <body>
+        <h1>🏰 艾瑟雅大陆 - Roguelike爬塔游戏</h1>
+        <p>API端点:</p>
+        <ul>
+          <li>GET <a href="/api/tower?floor=1">/api/tower?floor=1</a> - 查询楼层</li>
+          <li>GET <a href="/api/tower?username=kebaibai">/api/tower?username=kebaibai</a> - 查询状态</li>
+          <li>POST /api/tower - 注册: {"action":"register","username":"xxx","nickname":"xxx"}</li>
+          <li>POST /api/tower - 开始: {"action":"start","username":"xxx","floor":1}</li>
+          <li>POST /api/tower - 移动: {"action":"move","direction":"up"}</li>
+        </ul>
+        <h2>测试API</h2>
+        <button onclick="testAPI()">测试第1层</button>
+        <pre id="result"></pre>
+        <script>
+          async function testAPI() {
+            const res = await fetch('/api/tower?floor=1');
+            const data = await res.json();
+            document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+          }
+        </script>
+      </body></html>
+    `);
+    return;
+  }
+
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, error: 'Not Found' }));
+    return;
+  }
+  
+  let body = '';
+  req.on('data', chunk => { body += chunk; });
+  req.on('end', () => {
+    try {
+      if (req.method === 'GET') {
+        handleGet(parsedUrl, res);
+      } else if (req.method === 'POST') {
+        const jsonBody = body ? JSON.parse(body) : {};
+        handlePost(jsonBody, res);
+      }
+    } catch (e) {
+      console.error('Request error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Internal error' }));
+    }
+  });
+}
+
+function jsonResponse(res, data, status = 200) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(data));
+}
+
+function handleGet(parsedUrl, res) {
+  const { query } = parsedUrl;
+  const username = query.username;
+  const floor = query.floor;
+  const action = query.action;
+  
+  // 楼层列表
+  if (action === 'list') {
+    return jsonResponse(res, {
+      success: true,
+      floors: TOWER_FLOORS.map(f => ({
+        floor: f.floor,
+        name: f.name,
+        difficulty: f.difficulty,
+        isBossFloor: f.floor % 10 === 0,
+        unlockLevel: f.unlockLevel,
+      })),
+    });
+  }
+  
+  // 获取探索状态
+  if (username) {
+    const session = activeSessions.get(username);
+    if (!session) {
+      return jsonResponse(res, { success: true, exploring: false, message: '未在探索中' });
+    }
+    
+    // 生成地图可视化
+    const mazeMap = session.maze.map((row, y) => 
+      row.map((cell, x) => {
+        if (session.playerPos.x === x && session.playerPos.y === y) return '🧙';
+        if (session.exitPos.x === x && session.exitPos.y === y) return '🚪';
+        switch (cell.type) {
+          case 'wall': return '🧱';
+          case 'monster': return '👹';
+          case 'boss': return '💀';
+          case 'chest': return '📦';
+          case 'other_agent': return '🤖';
+          default: return '·';
+        }
+      }).join('')
+    );
+    
+    return jsonResponse(res, {
+      success: true,
+      exploring: true,
+      session: {
+        username: session.username,
+        floor: session.floor,
+        playerPos: session.playerPos,
+        moves: session.moves,
+        mazeSize: session.maze.length,
+        exitPos: session.exitPos,
+        remainingMonsters: session.monsters.length,
+        remainingChests: session.chests.filter(c => !c.opened).length,
+        otherAgents: session.otherAgents,
+        elapsed: Math.floor((Date.now() - session.startTime) / 1000),
+      },
+      mazeMap,
+    });
+  }
+  
+  // 玩家详情
+  if (action === 'profile' && username) {
+    const player = playerData.get(username);
+    if (!player) {
+      return jsonResponse(res, { success: false, error: '玩家不存在，请先注册' }, 404);
+    }
+    const rareCards = player.cards.filter(c => c.rarity !== 'common').length;
+    return jsonResponse(res, {
+      success: true,
+      player: {
+        username: player.username,
+        level: player.level,
+        exp: player.exp,
+        expToNext: player.expToNext,
+        hp: player.hp,
+        maxHp: player.maxHp,
+        attack: player.attack,
+        defense: player.defense,
+        cards: player.cards,
+        totalCards: player.cards.length,
+        rareCards,
+        stats: {
+          monstersDefeated: player.monstersDefeated,
+          chestsOpened: player.chestsOpened,
+          floorsCleared: player.floorsCleared,
+        },
+        mission: {
+          role: '学徒',
+          description: '击败3个怪物并收集1张稀有卡牌',
+          progress: {
+            monstersDefeated: player.monstersDefeated,
+            targetMonsters: 3,
+            rareCardsCollected: rareCards,
+            targetRareCards: 1,
+          },
+          isComplete: player.monstersDefeated >= 3 && rareCards >= 1,
+        },
+      },
+    });
+  }
+  
+  // 楼层详情
+  if (floor) {
+    const floorNum = parseInt(floor);
+    const floorInfo = TOWER_FLOORS[floorNum - 1];
+    if (!floorInfo) {
+      return jsonResponse(res, { success: false, error: '楼层不存在' }, 404);
+    }
+    return jsonResponse(res, {
+      success: true,
+      floor: {
+        floor: floorInfo.floor,
+        name: floorInfo.name,
+        difficulty: floorInfo.difficulty,
+        isBossFloor: floorNum % 10 === 0,
+        rewardExp: floorInfo.rewardExp,
+        unlockLevel: floorInfo.unlockLevel,
+        monsterCount: floorNum % 10 === 0 ? 1 : 1 + Math.floor(Math.random() * 3),
+        chestCount: 1 + Math.floor(Math.random() * 3),
+        hasOtherAgents: Math.random() < 0.2,
+      },
+    });
+  }
+  
+  return jsonResponse(res, { success: false, error: '请提供 username 或 floor 参数' }, 400);
+}
+
+function handlePost(body, res) {
+  const { username, action, direction, monsterIndex, chestIndex, floor } = body;
+  
+  if (!username) {
+    return jsonResponse(res, { success: false, error: '缺少username' }, 400);
+  }
+  
+  switch (action) {
+    case 'register': {
+      const player = initPlayerData(username);
+      return jsonResponse(res, {
+        success: true,
+        message: 'Agent 注册成功',
+        agent: { 
+          username, 
+          nickname: body.nickname || username, 
+          avatar: body.avatar,
+          role: '学徒',
+          mission: '击败3个怪物并收集1张稀有卡牌',
+        },
+        player: {
+          level: player.level,
+          exp: player.exp,
+          expToNext: player.expToNext,
+          hp: player.hp,
+          maxHp: player.maxHp,
+          attack: player.attack,
+          defense: player.defense,
+        },
+      });
+    }
+      
+    case 'start': {
+      const floorNum = floor || 1;
+      const session = new FloorSession(floorNum, username);
+      activeSessions.set(username, session);
+      
+      return jsonResponse(res, {
+        success: true,
+        message: `开始探索第${floorNum}层: ${TOWER_FLOORS[floorNum - 1]?.name}`,
+        session: {
+          username: session.username,
+          floor: session.floor,
+          playerPos: session.playerPos,
+          mazeSize: session.maze.length,
+          monsters: session.monsters.map(m => ({ name: m.name, level: m.level, hp: m.hp, maxHp: m.maxHp })),
+          chests: session.chests.length,
+          otherAgents: session.otherAgents.length,
+        },
+        controls: {
+          move: 'POST /api/tower with direction: "up"|"down"|"left"|"right"',
+          attack: 'POST /api/tower with action: "attack", monsterIndex',
+          openChest: 'POST /api/tower with action: "open_chest", chestIndex',
+          flee: 'POST /api/tower with action: "flee"',
+        },
+      });
+    }
+    
+    case 'move': {
+      const session = activeSessions.get(username);
+      if (!session) {
+        return jsonResponse(res, { success: false, error: '未在探索中' }, 400);
+      }
+      
+      let dx = 0, dy = 0;
+      switch (direction) {
+        case 'up': dy = -1; break;
+        case 'down': dy = 1; break;
+        case 'left': dx = -1; break;
+        case 'right': dx = 1; break;
+        default:
+          return jsonResponse(res, { success: false, error: '无效方向' }, 400);
+      }
+      
+      const newX = session.playerPos.x + dx;
+      const newY = session.playerPos.y + dy;
+      
+      // 边界检查
+      if (newX < 0 || newX >= session.maze[0].length || newY < 0 || newY >= session.maze.length) {
+        return jsonResponse(res, { success: false, error: '无法移动到边界外' }, 400);
+      }
+      
+      const targetCell = session.maze[newY][newX];
+      
+      // 碰撞检测
+      if (targetCell.type === 'wall') {
+        return jsonResponse(res, { success: false, error: '撞墙了' }, 400);
+      }
+      
+      // 更新位置
+      const oldCell = session.maze[session.playerPos.y][session.playerPos.x];
+      oldCell.type = 'empty';
+      session.maze[newY][newX] = { type: 'player', x: newX, y: newY };
+      session.playerPos = { x: newX, y: newY };
+      session.moves++;
+      
+      let result = {
+        success: true,
+        moved: true,
+        playerPos: session.playerPos,
+        moves: session.moves,
+        encounter: null,
+      };
+      
+      // 检测遭遇
+      switch (targetCell.type) {
+        case 'monster':
+        case 'boss': {
+          const monsterIdx = session.monsters.findIndex(m => m.x === newX && m.y === newY);
+          if (monsterIdx !== -1) {
+            result.encounter = {
+              type: targetCell.type,
+              monster: session.monsters[monsterIdx],
+              monsterIndex: monsterIdx,
+              canAttack: true,
+            };
+          }
+          break;
+        }
+        case 'other_agent': {
+          const agent = session.otherAgents.find(a => a.x === newX && a.y === newY);
+          if (agent) {
+            result.encounter = {
+              type: 'agent',
+              agent,
+              canChallenge: true,
+            };
+          }
+          break;
+        }
+        case 'chest': {
+          const chestIdx = session.chests.findIndex(c => c.x === newX && c.y === newY && !c.opened);
+          if (chestIdx !== -1) {
+            result.encounter = {
+              type: 'chest',
+              chestIndex: chestIdx,
+              canOpen: true,
+            };
+          }
+          break;
+        }
+        case 'exit':
+          // 到达出口时不再自动清除会话，让玩家有机会开宝箱
+          result.reachedExit = true;
+          result.canClear = true;
+          result.message = '到达出口！可调用 action: "clear" 完成本层，或继续开宝箱';
+          break;
+      }
+      
+      return jsonResponse(res, result);
+    }
+    
+    case 'attack': {
+      const session = activeSessions.get(username);
+      if (!session) {
+        return jsonResponse(res, { success: false, error: '未在探索中' }, 400);
+      }
+      
+      // 获取玩家数据
+      const player = playerData.get(username) || initPlayerData(username);
+      
+      const idx = monsterIndex ?? 0;
+      const monster = session.monsters[idx];
+      if (!monster) {
+        return jsonResponse(res, { success: false, error: '怪物不存在' }, 404);
+      }
+      
+      // 检查是否在攻击范围内（相邻格子或同格）
+      const dx = Math.abs(monster.x - session.playerPos.x);
+      const dy = Math.abs(monster.y - session.playerPos.y);
+      if (dx > 1 || dy > 1) {
+        return jsonResponse(res, { success: false, error: '距离太远，无法攻击' }, 400);
+      }
+      
+      // 计算伤害（使用玩家attack属性）
+      const playerRoll = rollDice();
+      const baseDamage = player.attack || 10;
+      const playerDamage = Math.floor(baseDamage * (1 + playerRoll / 100));
+      const isCrit = playerRoll >= 95;
+      const finalDamage = isCrit ? playerDamage * 2 : playerDamage;
+      
+      monster.hp = Math.max(0, monster.hp - finalDamage);
+      
+      let result = {
+        success: true,
+        attacked: true,
+        damage: finalDamage,
+        isCrit,
+        monsterHp: monster.hp,
+        monsterMaxHp: monster.maxHp,
+      };
+      
+      // 怪物反击（受玩家defense影响）
+      if (monster.hp > 0) {
+        const enemyRoll = rollDice();
+        let enemyDamage = Math.floor(monster.level * 2 * (1 + enemyRoll / 200));
+        enemyDamage = Math.max(1, enemyDamage - (player.defense || 0));
+        player.hp = Math.max(0, player.hp - enemyDamage);
+        result.enemyDamage = enemyDamage;
+        result.playerHp = player.hp;
+        result.playerMaxHp = player.maxHp;
+        result.message = `造成${finalDamage}伤害${isCrit ? ' (暴击!)' : ''}，受到${enemyDamage}反击伤害`;
+      } else {
+        session.monsters.splice(idx, 1);
+        session.maze[monster.y][monster.x] = { type: 'empty', x: monster.x, y: monster.y };
+        
+        // 击杀奖励：经验和金币
+        const expReward = monster.level * 20;
+        const goldReward = monster.level * 10;
+        player.monstersDefeated++;
+        
+        const expResult = addExp(username, expReward);
+        if (expResult?.leveledUp) {
+          result.leveledUp = true;
+          result.newLevel = expResult.player.level;
+          result.message = `击杀${monster.name}！获得${expReward}经验和${goldReward}金币 🏆升级到Lv.${expResult.player.level}！`;
+        } else {
+          result.message = `击杀${monster.name}！获得${expReward}经验和${goldReward}金币`;
+        }
+        result.expGained = expReward;
+        result.goldGained = goldReward;
+        result.totalExp = expResult?.player.exp;
+        result.expToNext = expResult?.player.expToNext;
+        result.monstersDefeated = player.monstersDefeated;
+      }
+      
+      return jsonResponse(res, result);
+    }
+    
+    case 'open_chest': {
+      const session = activeSessions.get(username);
+      if (!session) {
+        return jsonResponse(res, { success: false, error: '未在探索中' }, 400);
+      }
+      
+      const idx = chestIndex ?? 0;
+      const chest = session.chests[idx];
+      if (!chest || chest.opened) {
+        return jsonResponse(res, { success: false, error: '宝箱不存在或已打开' }, 404);
+      }
+      
+      // 检查距离
+      const dx = Math.abs(chest.x - session.playerPos.x);
+      const dy = Math.abs(chest.y - session.playerPos.y);
+      if (dx > 1 || dy > 1) {
+        return jsonResponse(res, { success: false, error: '距离太远' }, 400);
+      }
+      
+      chest.opened = true;
+      session.maze[chest.y][chest.x] = { type: 'empty', x: chest.x, y: chest.y };
+      
+      // 获取玩家数据
+      const player = playerData.get(username) || initPlayerData(username);
+      player.chestsOpened++;
+      
+      // 随机奖励稀有度
+      const roll = Math.random();
+      let rarity = 'common';
+      let rarityText = '普通';
+      let icon = '⚔️';
+      if (roll < 0.05) { rarity = 'legendary'; rarityText = '传说'; icon = '💎'; }
+      else if (roll < 0.2) { rarity = 'epic'; rarityText = '史诗'; icon = '🔥'; }
+      else if (roll < 0.5) { rarity = 'rare'; rarityText = '稀有'; icon = '⭐'; }
+      
+      // 生成卡牌
+      const card = generateCard(rarity);
+      player.cards.push(card);
+      
+      // 检查任务进度（学徒任务：收集1张稀有卡）
+      const rareCardsCount = player.cards.filter(c => c.rarity === 'rare' || c.rarity === 'epic' || c.rarity === 'legendary').length;
+      
+      return jsonResponse(res, {
+        success: true,
+        opened: true,
+        reward: {
+          rarity,
+          icon,
+          card,
+          message: `获得${rarityText}卡牌【${card.name}】！`,
+        },
+        chestsRemaining: session.chests.filter(c => !c.opened).length,
+        playerCards: player.cards.length,
+        rareCards: rareCardsCount,
+        missionProgress: {
+          monstersDefeated: player.monstersDefeated,
+          rareCardsCollected: rareCardsCount,
+          targetMonsters: 3,
+          targetRareCards: 1,
+        },
+      });
+    }
+    
+    case 'clear': {
+      if (activeSessions.has(username)) {
+        activeSessions.delete(username);
+      }
+      
+      const floorNum = floor || 1;
+      const floorInfo = TOWER_FLOORS[floorNum - 1];
+      
+      // 获取玩家数据
+      const player = playerData.get(username) || initPlayerData(username);
+      player.floorsCleared++;
+      
+      // 通关经验奖励
+      const expReward = 100 + floorNum * 10;
+      const expResult = addExp(username, expReward);
+      
+      let rewards = {
+        exp: expReward,
+        nextFloor: Math.min(floorNum + 1, 100),
+        totalFloorsCleared: player.floorsCleared,
+      };
+      
+      // Boss层或5的倍数层额外奖励卡牌
+      if (floorNum % 10 === 0) {
+        const card = generateCard('epic');
+        player.cards.push(card);
+        rewards.cardReward = { rarity: 'epic', card };
+        rewards.message = `通关第${floorNum}层: ${floorInfo?.name}！获得${expReward}经验和1张史诗卡牌【${card.name}】！`;
+      } else if (floorNum % 5 === 0) {
+        const card = generateCard('rare');
+        player.cards.push(card);
+        rewards.cardReward = { rarity: 'rare', card };
+        rewards.message = `通关第${floorNum}层: ${floorInfo?.name}！获得${expReward}经验和1张稀有卡牌【${card.name}】！`;
+      } else {
+        rewards.message = `通关第${floorNum}层: ${floorInfo?.name}！获得${expReward}经验`;
+      }
+      
+      let result = {
+        success: true,
+        cleared: true,
+        ...rewards,
+      };
+      
+      // 检查升级
+      if (expResult?.leveledUp) {
+        result.leveledUp = true;
+        result.newLevel = expResult.player.level;
+        result.message += ` 🏆升级到Lv.${expResult.player.level}！`;
+        result.playerStats = {
+          level: expResult.player.level,
+          exp: expResult.player.exp,
+          expToNext: expResult.player.expToNext,
+          maxHp: expResult.player.maxHp,
+          attack: expResult.player.attack,
+          defense: expResult.player.defense,
+        };
+      }
+      
+      // 检查任务完成（学徒任务）
+      const rareCards = player.cards.filter(c => c.rarity !== 'common').length;
+      if (player.monstersDefeated >= 3 && rareCards >= 1) {
+        result.missionComplete = true;
+        result.missionReward = '恭喜完成学徒试炼！可前往第11-20层开始新角色旅程';
+        result.nextRole = '猎人/刺客';
+      }
+      
+      return jsonResponse(res, result);
+    }
+    
+    case 'flee': {
+      activeSessions.delete(username);
+      return jsonResponse(res, { success: true, fled: true, message: '逃离当前探索' });
+    }
+    
+    default:
+      return jsonResponse(res, { success: false, error: '未知操作' }, 400);
+  }
+}
+
+// ============= 启动服务器 =============
+const PORT = process.env.PORT || 5000;
+const server = http.createServer(handleRequest);
+
+server.listen(PORT, () => {
+  console.log(`🎮 艾瑟雅大陆游戏服务器已启动 (端口 ${PORT})`);
+  console.log(`   API 端点: http://localhost:${PORT}/api/tower`);
+});
+
+module.exports = server;
