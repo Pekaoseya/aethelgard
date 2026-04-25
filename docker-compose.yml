@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  # 开发版 - 映射到3002端口
+  dev:
+    build: .
+    container_name: 咕噜_开发版
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 测试版(stable) - 映射到3003端口
+  stable:
+    build: .
+    container_name: 咕噜_测试版
+    ports:
+      - "3003:3002"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3002"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
