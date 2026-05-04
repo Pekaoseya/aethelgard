@@ -1,0 +1,74 @@
+{
+  "name": "mnehmos.rpg.mcp",
+  "version": "1.0.2",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": "dist/cli.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:ci": "vitest run --reporter=basic",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "build": "tsc",
+    "start": "node dist/server/index.js",
+    "build:binaries": "npm run build && node esbuild.config.mjs",
+    "dev": "ts-node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mnehmos/rpg-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "rpg",
+    "dnd",
+    "tabletop",
+    "game-engine",
+    "ai-game",
+    "procedural-generation",
+    "typescript",
+    "model-context-protocol"
+  ],
+  "author": "Mnehmos",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mnehmos/rpg-mcp/issues"
+  },
+  "homepage": "https://github.com/Mnehmos/rpg-mcp#readme",
+  "description": "Complete tabletop RPG game engine via MCP - D&D 5e combat, procedural worldgen, NPC memory, 28 consolidated tools",
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.10.1",
+    "@types/seedrandom": "^3.0.8",
+    "@types/ws": "^8.5.10",
+    "@yao-pkg/pkg": "^6.10.1",
+    "esbuild": "^0.27.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "better-sqlite3",
+      "esbuild"
+    ]
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.23.0",
+    "@types/uuid": "^10.0.0",
+    "better-sqlite3": "^12.4.6",
+    "mathjs": "^15.1.0",
+    "nerdamer": "^1.1.13",
+    "seedrandom": "^3.0.5",
+    "simplex-noise": "^4.0.3",
+    "uuid": "^13.0.0",
+    "ws": "^8.16.0",
+    "zod": "^3.25.76"
+  }
+}
