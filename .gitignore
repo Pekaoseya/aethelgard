@@ -98,3 +98,20 @@ Desktop.ini
 .turbo
 
 .coze-logs
+
+# Images
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.svg
+*.ico
+
+# Backup files
+*.bak
+*.backup
+
+# pnpm lock backup
+pnpm-lock.yaml.bak
+
