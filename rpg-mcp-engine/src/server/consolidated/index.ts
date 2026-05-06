@@ -111,3 +111,6 @@ export const ConsolidatedTools = [
     { tool: TravelManageTool, handler: handleTravelManage },
     { tool: BatchManageTool, handler: handleBatchManage },
 ];
+
+// Batch 6 - Stupid Agents (New)
+export { stupid_agent_manage } from './stupid-agent-manage.js';

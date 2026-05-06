@@ -16,3 +16,4 @@ export * from './nation.js';
 export * from './diplomacy.js';
 export * from './turn-state.js';
 export * from './secret.js';
+export * from './stupid-agent.js';
