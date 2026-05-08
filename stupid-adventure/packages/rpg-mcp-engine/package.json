@@ -1,5 +1,5 @@
 {
-  "name": "mnehmos.rpg.mcp",
+  "name": "@stupid-adventure/rpg-mcp-engine",
   "version": "1.0.2",
   "type": "module",
   "main": "dist/index.js",

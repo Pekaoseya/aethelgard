@@ -6,8 +6,8 @@ export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@ai': path.resolve(__dirname, './src/ai')
+      '@': path.resolve(__dirname, './packages/stupid-ai'),
+      '@ai': path.resolve(__dirname, './packages/stupid-ai/ai')
     }
   },
   server: {

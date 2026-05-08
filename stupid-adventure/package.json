@@ -1,19 +1,26 @@
 {
   "name": "stupid-adventure",
   "version": "1.0.0",
-  "description": "智障探险队 - RPG-JS + AI 决策引擎",
+  "description": "智障探险队 - RPG-JS + AI 决策引擎 + rpg-mcp-engine",
   "type": "module",
   "scripts": {
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "dev:rpg": "pnpm -F @rpgjs/client dev",
-    "build:rpg": "pnpm -r build",
+    "dev:ai": "pnpm -F @stupid-adventure/ai dev",
+    "dev:mcp": "pnpm -F @stupid-adventure/rpg-mcp-engine dev",
+    "build:ai": "pnpm -F @stupid-adventure/ai build",
+    "build:mcp": "pnpm -F @stupid-adventure/rpg-mcp-engine build",
+    "start:mcp": "pnpm -F @stupid-adventure/rpg-mcp-engine start",
     "test": "vitest"
   },
   "dependencies": {
     "vue": "^3.4.0",
-    "pinia": "^2.1.0"
+    "pinia": "^2.1.0",
+    "@stupid-adventure/ai": "workspace:*",
+    "@stupid-adventure/rpg-mcp-engine": "workspace:*",
+    "@rpgjs/client": "workspace:*",
+    "@rpgjs/server": "workspace:*"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
