@@ -35,21 +35,25 @@ export default {
   providers: [
     provideLoadMap((id: string) => {
       const colorMap = {
-        "center-map": "red",
-        "left-map": "blue",
-        "right-map": "green",
-        "top-map": "yellow",
-        "bottom-map": "purple",
+        "center-map": "#1a472a",
+        "left-map": "#2d5a7b",
+        "right-map": "#7b2d5a",
+        "top-map": "#5a7b2d",
+        "bottom-map": "#5a2d7b",
+        "town": "#3d6b3d",
       }
        return {
           id,
           component: Map,
-          width: 500,
-          height: 500,
+          width: 640,
+          height: 480,
           data: {
-            color: colorMap[id]
+            color: colorMap[id] || "#3d6b3d"
           },
           hitboxes: [],
+          player: {
+            sprite: "stupid-hero"
+          },
        }
     }),
     // provideTiledMap({
@@ -77,6 +81,35 @@ export default {
               framesWidth: 1,
               framesHeight: 1,
               id,
+            })
+          }
+          // 用户的角色精灵 - characters_v2.png (768x1024, 128x128 per frame)
+          if (id === "hero" || id === "stupid-hero") {
+            return Presets.LPCSpritesheetPreset({
+              id: "stupid-hero",
+              imageSource: "characters_v2.png",
+              width: 768,
+              height: 1024,
+              ratio: 1,
+            })
+          }
+          // 用户的 Gulu 角色 - gulu_v2.png (1280x1280, 128x128 per frame)
+          if (id === "gulu") {
+            return Presets.LPCSpritesheetPreset({
+              id: "gulu",
+              imageSource: "gulu_v2.png",
+              width: 1280,
+              height: 1280,
+              ratio: 1,
+            })
+          }
+          // 物品精灵 - items_v2.png
+          if (id === "items") {
+            return Presets.IconPreset({
+              image: "items_v2.png",
+              framesWidth: 6,
+              framesHeight: 1,
+              id: "items",
             })
           }
           if (id === "hero") {
@@ -162,8 +195,8 @@ export default {
             component: TitleScreenComponent,
             autoDisplay: true,
             data: {
-              title: "Chronicles",
-              subtitle: "of the Ancients",
+              title: "智障探险队",
+              subtitle: "踏上愚蠢的冒险之旅",
               version: "v1.0.0",
               localActions: true,
               saveLoad: {
@@ -171,9 +204,9 @@ export default {
                 slots: [null, null, null]
               },
               entries: [
-                { id: "start", label: "Start" },
-                { id: "load", label: "Load" },
-                { id: "credits", label: "Credits", disabled: true }
+                { id: "start", label: "开始游戏" },
+                { id: "load", label: "继续游戏" },
+                { id: "ai-mode", label: "AI 观察模式" }
               ]
             }
           },
