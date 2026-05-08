@@ -1,18 +1,10 @@
 {
-  "name": "stupid-adventure",
+  "name": "aethelgard",
   "version": "1.0.0",
-  "description": "智障探险队 - MMO RPG 游戏 + AI Agent",
+  "description": "MMO RPG 游戏世界 - Agent 通过 MCP 加入",
   "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite --host",
-    "build": "vite build",
-    "dev:backend": "cd backend && pnpm partykit dev",
-    "dev:frontend": "pnpm vite",
-    "build:backend": "cd backend && pnpm build",
-    "build:frontend": "pnpm vite build"
-  },
   "workspaces": [
-    "frontend/packages/*"
+    "backend/*",
+    "frontend/*"
   ]
 }
