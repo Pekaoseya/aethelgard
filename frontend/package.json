@@ -9,15 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@canvasengine/presets": "2.0.0-beta.61",
+    "@canvasengine/tiled": "2.0.0-beta.61",
     "@rpgjs/client": "5.0.0-beta.6",
     "@rpgjs/common": "5.0.0-beta.6",
     "@rpgjs/server": "5.0.0-beta.6",
     "@rpgjs/tiledmap": "5.0.0-beta.6",
     "@rpgjs/ui-css": "5.0.0-beta.6",
+    "@rpgjs/vite": "5.0.0-beta.6",
     "@signe/di": "^2.9.2",
     "@signe/room": "^2.9.4",
     "@signe/sync": "^2.9.4",
     "@vueuse/core": "^10.7.0",
+    "canvasengine": "2.0.0-beta.61",
     "pinia": "^2.1.0",
     "pixi.js": "8",
     "vue": "^3.4.0"

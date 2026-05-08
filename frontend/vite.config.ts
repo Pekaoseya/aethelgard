@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@ai': path.resolve(__dirname, './src/stupid-ai/ai'),
+      '@ai': path.resolve(__dirname, './src/ai'),
       '@components': path.resolve(__dirname, './src/stupid-ai/components'),
       '@stores': path.resolve(__dirname, './src/stupid-ai/stores')
     }
