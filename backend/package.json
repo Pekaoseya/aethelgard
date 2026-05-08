@@ -1,0 +1,17 @@
+{
+  "name": "@stupid-adventure/backend",
+  "version": "1.0.0",
+  "description": "智障探险队 - 游戏服务器后端",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "partykit dev",
+    "deploy": "partykit deploy"
+  },
+  "dependencies": {
+    "partysocket": "^1.0.2"
+  },
+  "devDependencies": {
+    "partykit": "^0.0.115"
+  }
+}

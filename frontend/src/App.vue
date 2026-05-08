@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AIGame from '../packages/stupid-ai/components/AIGame.vue'
+import AIGame from './stupid-ai/components/AIGame.vue'
 
 const currentView = ref<'menu' | 'ai-game' | 'rpg-game'>('menu')
 

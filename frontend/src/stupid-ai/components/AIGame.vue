@@ -254,8 +254,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { useAIGameStore } from '@/stores/ai-game';
-import AIPanel from '@/components/AIPanel.vue';
+import { useAIGameStore } from '@/stupid-ai/stores/ai-game';
+import AIPanel from '@/stupid-ai/components/AIPanel.vue';
 import type { AIControlledNPC } from '@/ai';
 import { ALL_SCENARIOS, getDifficultyColor } from '@/ai/scenarios';
 
