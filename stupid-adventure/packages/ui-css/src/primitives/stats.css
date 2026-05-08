@@ -1,0 +1,70 @@
+.rpg-ui-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 12px;
+  border-radius: var(--rpg-ui-radius-md);
+  border: 1px solid var(--rpg-ui-border-dark);
+}
+
+.rpg-ui-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.rpg-ui-stat:last-child {
+  border-bottom: none;
+}
+
+.rpg-ui-stat-label {
+  color: var(--rpg-ui-text-muted);
+}
+
+.rpg-ui-stat-value {
+  color: var(--rpg-ui-text);
+  font-weight: bold;
+  font-family: var(--rpg-ui-font-mono);
+}
+
+.rpg-ui-stat-change {
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.rpg-ui-stat-change[data-type="positive"] {
+  color: var(--rpg-ui-success);
+}
+
+.rpg-ui-stat-change[data-type="negative"] {
+  color: var(--rpg-ui-danger);
+}
+
+/* Stat Bar Container (for combining label + bar + value) */
+.rpg-ui-stat-bar-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.rpg-ui-stat-bar-container .rpg-ui-stat-label {
+  width: 30px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.rpg-ui-stat-bar-container .rpg-ui-bar {
+  flex: 1;
+  margin-bottom: 0;
+  height: 16px;
+}
+
+.rpg-ui-stat-bar-container .rpg-ui-stat-value {
+  width: 40px;
+  text-align: right;
+  font-size: 12px;
+}

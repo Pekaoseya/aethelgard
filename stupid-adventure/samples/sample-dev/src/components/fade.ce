@@ -1,0 +1,48 @@
+
+
+<Container positionType="absolute" top={0} left={0} right={0} bottom={0}>
+  <Rect
+    x={0} 
+    y={0} 
+    width={width}
+    height={height}
+    color="black"
+    alpha={opacity}
+  />
+</Container>
+
+<script>
+  import { animatedSignal, mount, computed, signal } from "canvasengine";
+  import { inject, RpgClientEngine } from "@rpgjs/client";
+
+  const {
+    onFinish,
+    data
+  } = defineProps();
+
+  const fadeIn = computed(() => data().fadeIn);
+  const duration = computed(() => data().duration);
+  const color = computed(() => data().color || 'black');
+
+  const engine = inject(RpgClientEngine);
+
+  const width = signal(0)
+  const height = signal(0)
+
+  // Animation: fade in from transparent to opaque, or fade out from opaque to transparent
+  const opacity = animatedSignal(fadeIn() ? 0 : 1, {
+    duration: duration(),
+    onComplete: () => {
+      if (onFinish) {
+        onFinish();
+      }
+    }
+  });
+
+  mount((element) => {
+    opacity.set(fadeIn() ? 1 : 0);
+    console.log(opacity())
+    width.set(element.props.context.canvasSize().width)
+    height.set(element.props.context.canvasSize().height)
+  });
+</script>

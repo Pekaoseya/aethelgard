@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import AIGame from './components/AIGame.vue'
+import AIGame from '../packages/stupid-ai/components/AIGame.vue'
 
 const showAIGame = ref(false)
 </script>

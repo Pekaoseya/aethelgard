@@ -1,0 +1,46 @@
+{
+  "name": "@rpgjs/server",
+  "version": "5.0.0-beta.5",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./node": {
+      "import": "./dist/node/index.js",
+      "types": "./dist/node/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "@canvasengine/tiled": "2.0.0-beta.58",
+    "@rpgjs/common": "workspace:*",
+    "@rpgjs/physic": "workspace:*",
+    "@rpgjs/testing": "workspace:*",
+    "@rpgjs/database": "^4.3.0",
+    "@signe/di": "^2.9.0",
+    "@signe/reactive": "^2.9.0",
+    "@signe/room": "^2.9.0",
+    "@signe/sync": "^2.9.0",
+    "rxjs": "^7.8.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "vite": "^8.0.10",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "type": "module"
+}

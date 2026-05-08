@@ -1,0 +1,483 @@
+<Container x={smoothX} y={smoothY} zIndex={z} viewportFollow={shouldFollowCamera} controls onBeforeDestroy  visible>
+  @for (compConfig of normalizedComponentsBehind) {
+    <Container>
+      <compConfig.component object ...compConfig.props />
+    </Container>
+  } 
+  <Particle emit={emitParticleTrigger} settings={particleSettings} zIndex={1000} name={particleName} />
+  <Container>
+    @for (graphicObj of graphicsSignals) {
+      <Sprite 
+        sheet={sheet(graphicObj)} 
+        scale={graphicScale(graphicObj)}
+        direction 
+        tint 
+        hitbox
+        flash={flashConfig}
+      />
+    }
+  </Container>
+  @for (compConfig of normalizedComponentsInFront) {
+    <Container dependencies={compConfig.dependencies}>
+      <compConfig.component object ...compConfig.props />
+    </Container>
+  }
+  @for (attachedGui of attachedGuis) {
+    @if (shouldDisplayAttachedGui) {
+      <Container>
+        <attachedGui.component ...attachedGui.data() dependencies={attachedGui.dependencies} object={object} onFinish={(data) => {
+          onAttachedGuiFinish(attachedGui, data)
+        }} onInteraction={(name, data) => {
+          onAttachedGuiInteraction(attachedGui, name, data)
+        }} />
+      </Container>
+    }
+  }
+</Container>
+
+<script>
+  import { signal, effect, mount, computed, tick, animatedSignal, on } from "canvasengine";
+
+  import { lastValueFrom, combineLatest, pairwise, filter, map, startWith } from "rxjs";
+  import { Particle } from "@canvasengine/presets";
+  import { GameEngineToken, ModulesToken } from "@rpgjs/common";
+  import { RpgClientEngine } from "../RpgClientEngine";
+  import { inject } from "../core/inject";  
+  import { Direction } from "@rpgjs/common";
+  import Hit from "./effects/hit.ce";
+  import PlayerComponents from "./player-components.ce";
+  import { RpgGui } from "../Gui/Gui";
+
+  const { object, id } = defineProps();
+
+  const client = inject(RpgClientEngine);
+  const hooks = inject(ModulesToken);
+  const guiService = inject(RpgGui);
+
+  const spritesheets = client.spritesheets;
+  const playerId = client.playerId;
+  const componentsBehind = client.spriteComponentsBehind;
+  const componentsInFront = client.spriteComponentsInFront;
+  const isMe = computed(() => id() === playerId);
+
+  /**
+   * Normalize a single sprite component configuration
+   * 
+   * Handles both direct component references and configuration objects with optional props and dependencies.
+   * Extracts the component reference and creates a computed function that returns the props.
+   * 
+   * ## Design
+   * 
+   * Supports two formats:
+   * 1. Direct component: `ShadowComponent`
+   * 2. Configuration object: `{ component: LightHalo, props: {...}, dependencies: (object) => [...] }`
+   * 
+   * The normalization process:
+   * - Extracts the actual component from either format
+   * - Extracts dependencies function if provided
+   * - Creates a computed function that returns props (static object or dynamic function result)
+   * - Returns a normalized object with `component`, `props`, and `dependencies`
+   * 
+   * @param comp - Component reference or configuration object
+   * @returns Normalized component configuration with component, props, and dependencies
+   * 
+   * @example
+   * ```ts
+   * // Direct component
+   * normalizeComponent(ShadowComponent)
+   * // => { component: ShadowComponent, props: {}, dependencies: undefined }
+   * 
+   * // With static props
+   * normalizeComponent({ component: LightHalo, props: { radius: 30 } })
+   * // => { component: LightHalo, props: { radius: 30 }, dependencies: undefined }
+   * 
+   * // With dynamic props and dependencies
+   * normalizeComponent({ 
+   *   component: HealthBar, 
+   *   props: (object) => ({ hp: object.hp(), maxHp: object.param.maxHp() }),
+   *   dependencies: (object) => [object.hp, object.param.maxHp]
+   * })
+   * // => { component: HealthBar, props: {...}, dependencies: (object) => [...] }
+   * ```
+   */
+  const normalizeComponent = (comp) => {
+    let componentRef;
+    let propsValue;
+    let dependenciesFn;
+    
+    // If it's a direct component reference
+    if (typeof comp === 'function' || (comp && typeof comp === 'object' && !comp.component)) {
+      componentRef = comp;
+      propsValue = undefined;
+      dependenciesFn = undefined;
+    }
+    // If it's a configuration object with component and props
+    else if (comp && typeof comp === 'object' && comp.component) {
+      componentRef = comp.component;
+      // Support both "data" (legacy) and "props" (new) for backward compatibility
+      propsValue = comp.props !== undefined ? comp.props : comp.data;
+      dependenciesFn = comp.dependencies;
+    }
+    // Fallback: treat as direct component
+    else {
+      componentRef = comp;
+      propsValue = undefined;
+      dependenciesFn = undefined;
+    }
+    
+    // Return props directly (object or function), not as computed
+    // The computed will be created in the template when needed
+    return {
+      component: componentRef,
+      props: typeof propsValue === 'function' ? propsValue(object) : propsValue || {},
+      dependencies: dependenciesFn ? dependenciesFn(object) : []
+    };
+  };
+
+  /**
+   * Normalize an array of sprite components
+   * 
+   * Applies normalization to each component in the array using `normalizeComponent`.
+   * 
+   * @param components - Array of component references or configuration objects
+   * @returns Array of normalized component configurations
+   */
+  const normalizeComponents = (components) => {
+    return components.map((comp) => normalizeComponent(comp));
+  };
+
+
+  /**
+   * Normalized components to render behind sprites
+   * Handles both direct component references and configuration objects with optional props and dependencies
+   * 
+   * Supports multiple formats:
+   * 1. Direct component: `ShadowComponent`
+   * 2. Configuration object: `{ component: LightHalo, props: {...} }`
+   * 3. With dynamic props: `{ component: LightHalo, props: (object) => {...} }`
+   * 4. With dependencies: `{ component: HealthBar, dependencies: (object) => [object.hp, object.param.maxHp] }`
+   * 
+   * Components with dependencies will only be displayed when all dependencies are resolved (!= undefined).
+   * The object is passed to the dependencies function to allow sprite-specific dependency resolution.
+   * 
+   * @example
+   * ```ts
+   * // Direct component
+   * componentsBehind: [ShadowComponent]
+   * 
+   * // With static props
+   * componentsBehind: [{ component: LightHalo, props: { radius: 30 } }]
+   * 
+   * // With dynamic props and dependencies
+   * componentsBehind: [{ 
+   *   component: HealthBar, 
+   *   props: (object) => ({ hp: object.hp(), maxHp: object.param.maxHp() }),
+   *   dependencies: (object) => [object.hp, object.param.maxHp]
+   * }]
+   * ```
+   */
+  const normalizedComponentsBehind = computed(() => {
+    return normalizeComponents(componentsBehind());
+  });
+
+  /**
+   * Normalized components to render in front of sprites
+   * Handles both direct component references and configuration objects with optional props and dependencies
+   * 
+   * See `normalizedComponentsBehind` for format details.
+   * Components with dependencies will only be displayed when all dependencies are resolved.
+   */
+  const normalizedComponentsInFront = computed(() => {
+    return normalizeComponents(componentsInFront());
+  });
+  
+  /**
+   * Determine if the camera should follow this sprite
+   * 
+   * The camera follows this sprite if:
+   * - It's explicitly set as the camera follow target, OR
+   * - It's the current player and no explicit target is set (default behavior)
+   */
+  const shouldFollowCamera = computed(() => {
+    const cameraTargetId = client.cameraFollowTargetId();
+    // If a target is explicitly set, only follow if this sprite is the target
+    if (cameraTargetId !== null) {
+      return id() === cameraTargetId;
+    }
+    // Otherwise, follow the current player (default behavior)
+    return isMe();
+  });
+
+  /**
+   * Get all attached GUI components that should be rendered on sprites
+   * These are GUIs with attachToSprite: true
+   */
+  const attachedGuis = computed(() => {
+    return guiService.getAttachedGuis();
+  });
+
+  /**
+   * Check if attached GUIs should be displayed for this sprite
+   * This is controlled by showAttachedGui/hideAttachedGui on the server
+   */
+  const shouldDisplayAttachedGui = computed(() => {
+    return guiService.shouldDisplayAttachedGui(id());
+  });
+
+  const { 
+    x, 
+    y, 
+    tint, 
+    direction, 
+    animationName, 
+    animationCurrentIndex,
+    emitParticleTrigger, 
+    particleName, 
+    graphics, 
+    hitbox,
+    isConnected,
+    graphicsSignals,
+    flashTrigger
+  } = object;
+
+  /**
+   * Flash configuration signals for dynamic options
+   * These signals are updated when the flash trigger is activated with options
+   */
+  const flashType = signal<'alpha' | 'tint' | 'both'>('alpha');
+  const flashDuration = signal(300);
+  const flashCycles = signal(1);
+  const flashAlpha = signal(0.3);
+  const flashTint = signal(0xffffff);
+
+  /**
+   * Listen to flash trigger to update configuration dynamically
+   * When flash is triggered with options, update the signals
+   */
+  on(flashTrigger, (data) => {
+    if (data && typeof data === 'object') {
+      if (data.type !== undefined) flashType.set(data.type);
+      if (data.duration !== undefined) flashDuration.set(data.duration);
+      if (data.cycles !== undefined) flashCycles.set(data.cycles);
+      if (data.alpha !== undefined) flashAlpha.set(data.alpha);
+      if (data.tint !== undefined) flashTint.set(data.tint);
+    }
+  });
+
+  /**
+   * Flash configuration for the sprite
+   * 
+   * This configuration is used by the flash directive to create visual feedback effects.
+   * The flash trigger is exposed through the object, allowing both server events and
+   * client-side code to trigger flash animations. Options can be passed dynamically
+   * through the trigger, which updates the reactive signals.
+   */
+  const flashConfig = computed(() => ({
+    trigger: flashTrigger,
+    type: flashType(),
+    duration: flashDuration(),
+    cycles: flashCycles(),
+    alpha: flashAlpha(),
+    tint: flashTint(),
+  }));
+
+  const particleSettings = client.particleSettings;
+
+  const canControls = () => isMe() && object.canMove()
+  const keyboardControls = client.globalConfig.keyboardControls;
+
+  const visible = computed(() => {
+    if (object.isEvent()) {
+      return true
+    }
+    return isConnected()
+  });
+
+  const controls = signal({
+    down: {
+      repeat: true,
+      bind: keyboardControls.down,
+      keyDown() {
+        if (canControls()) client.processInput({ input: Direction.Down })
+      },
+    },
+    up: {
+      repeat: true,
+      bind: keyboardControls.up,
+      keyDown() {
+        if (canControls()) client.processInput({ input: Direction.Up })
+      },
+    },
+    left: {
+      repeat: true,
+      bind: keyboardControls.left,
+      keyDown() {
+        if (canControls()) client.processInput({ input: Direction.Left })
+      },
+    },
+    right: {
+      repeat: true,
+      bind: keyboardControls.right,
+      keyDown() {
+        if (canControls()) client.processInput({ input: Direction.Right })
+      },
+    },
+    action: {
+      bind: keyboardControls.action,
+      keyDown() {
+        if (canControls()) {
+          client.processAction({ action: 'action' })
+        }
+      },
+    },
+    escape: {
+      bind: keyboardControls.escape,
+      keyDown() {
+        if (canControls()) {
+          client.processAction({ action: 'escape' })
+        }
+      },
+    },
+    gamepad: {
+      enabled: true
+    }
+  });
+
+  const smoothX = animatedSignal(x(), {
+    duration: isMe() ? 0 : 0
+  });
+
+  const smoothY = animatedSignal(y(), {
+    duration: isMe() ? 0 : 0,
+  });
+
+  const z = computed(() => {
+    return object.y() + object.z()
+  });
+
+  const realAnimationName = signal(animationName());
+
+  const xSubscription = x.observable.subscribe((value) => {
+    smoothX.set(value);
+  });
+
+  const ySubscription = y.observable.subscribe((value) => {
+    smoothY.set(value);
+  });
+  
+  const sheet = (graphicObject) => {
+    return {
+      definition: graphicObject,
+      playing: realAnimationName(),
+      params: {
+        direction: direction()
+      },
+      onFinish() {
+        animationCurrentIndex.update(index => index + 1)
+      }
+    };
+  }
+
+  const graphicScale = (graphicObject) => {
+    const scale = graphicObject?.scale;
+    if (Array.isArray(scale)) return scale;
+    if (typeof scale === 'number') return [scale, scale];
+    if (scale && typeof scale === 'object') {
+      const x = typeof scale.x === 'number' ? scale.x : 1;
+      const y = typeof scale.y === 'number' ? scale.y : x;
+      return [x, y];
+    }
+    return undefined;
+  }
+
+  // Combine animation change detection with movement state from smoothX/smoothY
+  const movementAnimations = ['walk', 'stand'];
+  const epsilon = 0; // movement threshold to consider the easing still running
+
+  const stateX$ = smoothX.animatedState.observable;
+  const stateY$ = smoothY.animatedState.observable;
+  const animationName$ = animationName.observable;
+
+  const moving$ = combineLatest([stateX$, stateY$]).pipe(
+    map(([sx, sy]) => {
+      const xFinished = Math.abs(sx.value.current - sx.value.end) <= epsilon;
+      const yFinished = Math.abs(sy.value.current - sy.value.end) <= epsilon;
+      return !xFinished || !yFinished; // moving if X or Y is not finished
+    }),
+    startWith(false)
+  );
+
+  const animationChange$ = animationName$.pipe(
+    startWith(animationName()),
+    pairwise(),
+    filter(([prev, curr]) => prev !== curr)
+  );
+
+  const animationMovementSubscription = combineLatest([animationChange$, moving$]).subscribe(([[prev, curr], isMoving]) => {
+    if (curr == 'stand' && !isMoving) {
+      realAnimationName.set(curr);
+    }
+    else if (curr == 'walk' && isMoving) {
+      realAnimationName.set(curr);
+    }
+    else if (!movementAnimations.includes(curr)) {
+      realAnimationName.set(curr);
+    }
+    if (!isMoving && object.animationIsPlaying && object.animationIsPlaying()) {
+      if (movementAnimations.includes(curr)) {
+        if (typeof object.resetAnimationState === 'function') {
+          object.resetAnimationState();
+        }
+      }
+    }
+  });
+
+  /**
+   * Cleanup subscriptions and call hooks before sprite destruction.
+   *
+   * # Design
+   * - Prevent memory leaks by unsubscribing from all local subscriptions created in this component.
+   * - Execute destruction hooks to notify modules and scene map of sprite removal.
+   *
+   * @example
+   * await onBeforeDestroy();
+   */
+  const onBeforeDestroy = async () => {
+    animationMovementSubscription.unsubscribe();
+    xSubscription.unsubscribe();
+    ySubscription.unsubscribe();
+    await lastValueFrom(hooks.callHooks("client-sprite-onDestroy", object)) 
+    await lastValueFrom(hooks.callHooks("client-sceneMap-onRemoveSprite", client.sceneMap, object))
+  }
+
+  mount((element) => {
+    hooks.callHooks("client-sprite-onAdd", object).subscribe()
+    hooks.callHooks("client-sceneMap-onAddSprite", client.sceneMap, object).subscribe()
+    if (isMe()) client.setKeyboardControls(element.directives.controls)
+  })
+
+  /**
+   * Handle attached GUI finish event
+   * 
+   * @param gui - The GUI instance
+   * @param data - Data passed from the GUI component
+   */
+  const onAttachedGuiFinish = (gui, data) => {
+    guiService.guiClose(gui.name, data);
+  };
+
+  /**
+   * Handle attached GUI interaction event
+   * 
+   * @param gui - The GUI instance
+   * @param name - Interaction name
+   * @param data - Interaction data
+   */
+  const onAttachedGuiInteraction = (gui, name, data) => {
+    guiService.guiInteraction(gui.name, name, data);
+  };
+
+  tick(() => {
+    hooks.callHooks("client-sprite-onUpdate").subscribe()
+  })
+</script>

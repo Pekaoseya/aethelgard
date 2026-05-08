@@ -1,0 +1,294 @@
+<DOMContainer width="100%" height="100%" controls={menuControls}>
+    <div class="rpg-ui-main-menu rpg-anim-fade-in">
+        <div class="rpg-ui-main-menu-layout">
+            <div class="rpg-ui-main-menu-left rpg-ui-menu rpg-ui-panel">
+                <div class="rpg-ui-menu-header">Menu</div>
+                <div class="rpg-ui-main-menu-list">
+                    @for ((entry,index) of menuEntries()) {
+                        <div
+                            class="rpg-ui-menu-item"
+                            class={{disabled: isMenuDisabled(entry)}}
+                            data-selected={selectedMenu() === index ? "true" : "false"}
+                            tabindex={index}
+                            click={selectMenu(index)}
+                        >{entry.label}</div>
+                    }
+                </div>
+            </div>
+            <div class="rpg-ui-main-menu-right">
+                @if (view() === "menu") {
+                    <div class="rpg-ui-panel">
+                        <div class="rpg-ui-main-menu-section-title">Status</div>
+                        <div class="rpg-ui-main-menu-status-card">
+                            <div class="rpg-ui-main-menu-status-block">
+                                <div class="rpg-ui-main-menu-status-label">Level</div>
+                                <div class="rpg-ui-main-menu-status-value">{level()}</div>
+                            </div>
+                            <div class="rpg-ui-main-menu-status-block">
+                                <div class="rpg-ui-main-menu-status-label">Gold</div>
+                                <div class="rpg-ui-main-menu-status-value">{gold()}</div>
+                            </div>
+                            <div class="rpg-ui-main-menu-status-block">
+                                <div class="rpg-ui-main-menu-status-label">HP {hp()}/{hpMax()}</div>
+                                <div class="rpg-ui-main-menu-status-bar">
+                                    <div class="rpg-ui-main-menu-status-bar-fill hp" style={{width: hpPercent}}></div>
+                                </div>
+                            </div>
+                            <div class="rpg-ui-main-menu-status-block">
+                                <div class="rpg-ui-main-menu-status-label">SP {sp()}/{spMax()}</div>
+                                <div class="rpg-ui-main-menu-status-bar">
+                                    <div class="rpg-ui-main-menu-status-bar-fill sp" style={{width: spPercent}}></div>
+                                </div>
+                            </div>
+                            <div class="rpg-ui-main-menu-status-block" style={{gridColumn: "span 2"}}>
+                                <div class="rpg-ui-main-menu-status-label">EXP {exp()}/{expForNextlevel()}</div>
+                                <div class="rpg-ui-main-menu-status-bar">
+                                    <div class="rpg-ui-main-menu-status-bar-fill exp" style={{width: expPercent}}></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rpg-ui-main-menu-section-title">Parameters</div>
+                        <div class="rpg-ui-main-menu-params">
+                            @for ((param,index) of paramsList) {
+                                <div class="rpg-ui-main-menu-param">
+                                    <span>{param.label}</span>
+                                    <span>{param.value}</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                @if (view() === "items") {
+                    <ItemsMenu data={data} onInteraction={onInteraction} onBack={goBack} />
+                }
+                @if (view() === "skills") {
+                    <SkillsMenu data={data} onBack={goBack} />
+                }
+                @if (view() === "equip") {
+                    <EquipMenu data={data} onInteraction={onInteraction} onBack={goBack} />
+                }
+                @if (view() === "options") {
+                    <OptionsMenu onBack={goBack} />
+                }
+                @if (view() === "exit") {
+                    <ExitMenu onConfirm={confirmExit} onBack={goBack} />
+                }
+            </div>
+        </div>
+        @if (saveOverlay) {
+            <div class="rpg-ui-main-menu-overlay">
+                <div class="rpg-ui-main-menu-overlay-backdrop"></div>
+                <div class="rpg-ui-main-menu-overlay-content">
+                    <SaveLoadComponent
+                        data={saveLoadData}
+                        onFinish={closeSaveOverlay}
+                    />
+                </div>
+            </div>
+        }
+    </div>
+</DOMContainer>
+
+<script>
+    import { signal, computed, effect, mount } from "canvasengine";
+    import { inject } from "../../../core/inject";
+    import { RpgClientEngine } from "../../../RpgClientEngine";
+    import SaveLoadComponent from "../save-load.ce";
+    import ItemsMenu from "./items-menu.ce";
+    import SkillsMenu from "./skills-menu.ce";
+    import EquipMenu from "./equip-menu.ce";
+    import OptionsMenu from "./options-menu.ce";
+    import ExitMenu from "./exit-menu.ce";
+    import { getEntityProp } from "../../../utils/getEntityProp";
+    import { delay } from "@rpgjs/common";
+
+    const engine = inject(RpgClientEngine);
+    const currentPlayer = engine.scene.currentPlayer;
+    const keyboardControls = engine.globalConfig.keyboardControls;
+
+    const { data, onFinish, onInteraction } = defineProps();
+    const { menus, items, skills, equips, saveLoad } = data();
+
+    const defaultMenus = [
+        { id: "items", label: "Items" },
+        { id: "skills", label: "Skills" },
+        { id: "equip", label: "Equip" },
+        { id: "options", label: "Options" },
+        { id: "save", label: "Save" },
+        { id: "exit", label: "Exit" }
+    ];
+
+    const menuEntries = computed(() => {
+        if (menus && Array.isArray(menus) && menus.length) return menus;
+        return defaultMenus;
+    });
+
+    const resolveProp = (value) => typeof value === "function" ? value() : value;
+    const saveLoadData = computed(() => resolveProp(saveLoad) || {});
+    const saveLoadMode = computed(() => saveLoadData().mode || "load");
+    const saveLoadSlots = computed(() => saveLoadData().slots || []);
+    const saveLoadCanSave = computed(() => saveLoadData().canSave !== false);
+
+    const isMenuDisabled = (entry) => {
+        if (!entry) return true;
+        if (entry.disabled) return true;
+        if (entry.enabled === false) return true;
+        if (entry.id === "save" && !saveLoadCanSave()) return true;
+        return false;
+    };
+
+    const selectedMenu = signal(0);
+    const view = signal("menu");
+    const saveOverlay = signal(false);
+
+    const selectableIndexes = computed(() => {
+        const entries = menuEntries();
+        return entries
+            .map((entry, index) => (isMenuDisabled(entry) ? null : index))
+            .filter((value) => value !== null);
+    });
+
+    effect(() => {
+        const available = selectableIndexes();
+        if (!available.length) return;
+        const current = selectedMenu();
+        if (!available.includes(current)) {
+            selectedMenu.set(available[0]);
+        }
+    });
+
+    const moveMenu = (delta) => {
+        const available = selectableIndexes();
+        if (!available.length) return;
+        const current = selectedMenu();
+        const currentIndex = Math.max(0, available.indexOf(current));
+        const nextIndex = (currentIndex + delta + available.length) % available.length;
+        selectedMenu.set(available[nextIndex]);
+    };
+
+    function selectMenu(index) {
+        return function() {
+            selectedMenu.set(index);
+            openMenu();
+        }
+    }
+
+    const openMenu = () => {
+        const entry = menuEntries()[selectedMenu()];
+        if (!entry || isMenuDisabled(entry)) return;
+        if (entry.id === "save") {
+            saveOverlay.set(true);
+            return;
+        }
+        if (entry.id === "exit") {
+            view.set("exit");
+            return;
+        }
+        view.set(entry.id);
+    };
+
+    const goBack = () => {
+        delay(() => {
+            view.set("menu");
+        });
+    };
+
+    const closeSaveOverlay = () => {
+        delay(() => {
+            saveOverlay.set(false);
+            view.set("menu");
+        });
+    };
+
+    const confirmExit = () => {
+        if (onInteraction) onInteraction("exit");
+    };
+
+    const hp = getEntityProp(currentPlayer, "hp");
+    const hpMax = getEntityProp(currentPlayer, "params.maxHp");
+    const sp = getEntityProp(currentPlayer, "sp");
+    const spMax = getEntityProp(currentPlayer, "params.maxSp");
+    const level = getEntityProp(currentPlayer, "level");
+    const exp = getEntityProp(currentPlayer, "exp");
+    const gold = getEntityProp(currentPlayer, "gold");
+    const expForNextlevel = computed(() => data().expForNextlevel || 0);
+    const hpPercent = computed(() => {
+        const max = hpMax() || 1;
+        return `${Math.max(0, Math.min(100, (hp() / max) * 100))}%`;
+    });
+    const spPercent = computed(() => {
+        const max = spMax() || 1;
+        return `${Math.max(0, Math.min(100, (sp() / max) * 100))}%`;
+    });
+    const expPercent = computed(() => {
+        const max = expForNextlevel() || 1;
+        return `${Math.max(0, Math.min(100, (exp() / max) * 100))}%`;
+    });
+
+    const paramsList = computed(() => {
+        return [
+            { label: "ATK", value: data().playerStats.atk },
+            { label: "PDEF", value: data().playerStats.pdef },
+            { label: "SDEF", value: data().playerStats.sdef },
+            { label: "STR", value: data().playerStats.str },
+            { label: "DEX", value: data().playerStats.dex },
+            { label: "INT", value: data().playerStats.int },
+            { label: "AGI", value: data().playerStats.agi }
+        ]
+    }
+
+    const menuControls = signal({
+        up: {
+            repeat: true,
+            bind: keyboardControls.up,
+            throttle: 150,
+            keyDown() {
+                if (saveOverlay()) return;
+                if (view() !== "menu") return;
+                moveMenu(-1);
+            }
+        },
+        down: {
+            repeat: true,
+            bind: keyboardControls.down,
+            throttle: 150,
+            keyDown() {
+                if (saveOverlay()) return;
+                if (view() !== "menu") return;
+                moveMenu(1);
+            }
+        },
+        action: {
+            bind: keyboardControls.action,
+            keyDown() {
+                if (saveOverlay()) return;
+                if (view() !== "menu") return;
+                openMenu();
+            }
+        },
+        escape: {
+            bind: keyboardControls.escape,
+            keyDown() {
+                if (saveOverlay()) return;
+                if (view() !== "menu") {
+                    goBack();
+                    return;
+                }
+                onFinish()
+            }
+        },
+        gamepad: {
+            enabled: true
+        }
+    });
+
+    mount((element) => {
+        engine.gamePause.set(true);
+        return () => {
+            delay(() => {
+                engine.stopProcessingInput = false;
+                engine.gamePause.set(false);
+            });
+        }
+    });
+</script>

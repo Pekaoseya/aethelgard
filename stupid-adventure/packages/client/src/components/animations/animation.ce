@@ -1,0 +1,16 @@
+<Sprite sheet x y anchor={0.5} />
+
+<script>
+  import { RpgClientEngine } from "../../RpgClientEngine";
+  import { inject } from "../../core/inject";
+
+  const { x, y, animationName, graphic, onFinish } = defineProps();
+
+  const client = inject(RpgClientEngine);
+
+  const sheet = {
+    definition: client.getSpriteSheet(graphic()),
+    playing: animationName() ?? 'default',
+    onFinish
+  };
+</script>
