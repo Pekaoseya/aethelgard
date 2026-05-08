@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智障探险队 - 程序化地牢</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a1a 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+        h1 {
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            margin-bottom: 20px;
+        }
+        #controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%);
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            color: #000;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+        }
+        #game-container {
+            position: relative;
+        }
+        #map-canvas {
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            image-rendering: pixelated;
+        }
+        #info-panel {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 2px solid #ffd700;
+            max-width: 280px;
+            z-index: 100;
+        }
+        #info-panel h3 {
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        #legend {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            border: 2px solid #666;
+            z-index: 100;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border: 1px solid #fff;
+            border-radius: 2px;
+        }
+        #player-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            border: 2px solid #4ade80;
+            z-index: 100;
+        }
+        #player-info h4 {
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+        .stat {
+            margin: 4px 0;
+        }
+        .stat-label {
+            color: #888;
+        }
+        .stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>🗺️ 智障探险队 - 程序化地牢</h1>
+    
+    <div id="controls">
+        <button onclick="regenerateDungeon()">🎲 生成新地牢</button>
+        <button onclick="toggleMaze()">🌀 迷宫模式</button>
+        <button onclick="zoomIn()">🔍 放大</button>
+        <button onclick="zoomOut()">🔎 缩小</button>
+        <button onclick="toggleLabels()">🏷️ 切换标签</button>
+    </div>
+    
+    <div id="game-container">
+        <canvas id="map-canvas"></canvas>
+    </div>
+    
+    <div id="info-panel">
+        <h3>📊 地牢信息</h3>
+        <div id="dungeon-stats"></div>
+    </div>
+    
+    <div id="player-info">
+        <h4>🎮 玩家状态</h4>
+        <div class="stat">
+            <span class="stat-label">位置:</span>
+            <span class="stat-value" id="player-pos">-</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">生命:</span>
+            <span class="stat-value" id="player-hp">100/100</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">金币:</span>
+            <span class="stat-value" id="player-gold">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">层数:</span>
+            <span class="stat-value" id="player-floor">1</span>
+        </div>
+    </div>
+    
+    <div id="legend">
+        <h4 style="margin: 0 0 8px 0;">图例</h4>
+        <div class="legend-item"><div class="legend-color" style="background:#3d3d5c"></div>地板</div>
+        <div class="legend-item"><div class="legend-color" style="background:#0f0f1a"></div>墙壁</div>
+        <div class="legend-item"><div class="legend-color" style="background:#ffd700"></div>宝箱</div>
+        <div class="legend-item"><div class="legend-color" style="background:#ff4444"></div>陷阱</div>
+        <div class="legend-item"><div class="legend-color" style="background:#ff00ff"></div>敌人</div>
+        <div class="legend-item"><div class="legend-color" style="background:#4a9eff"></div>下楼</div>
+        <div class="legend-item"><div class="legend-color" style="background:#4aff4a"></div>上楼</div>
+        <div class="legend-item"><div class="legend-color" style="background:#4ade80"></div>玩家</div>
+    </div>
+
+    <script>
+    // ==================== 程序化地牢生成器 ====================
+    
+    // 瓦片类型
+    const TILES = {
+        VOID: 0,
+        FLOOR: 1,
+        WALL: 2,
+        DOOR: 3,
+        CHEST: 4,
+        STAIRS_DOWN: 5,
+        STAIRS_UP: 6,
+        TRAP: 7,
+        SPAWNER: 8,
+    };
+    
+    // 瓦片颜色
+    const TILE_COLORS = {
+        [TILES.VOID]: '#1a1a2e',
+        [TILES.FLOOR]: '#3d3d5c',
+        [TILES.WALL]: '#0f0f1a',
+        [TILES.DOOR]: '#8b4513',
+        [TILES.CHEST]: '#ffd700',
+        [TILES.STAIRS_DOWN]: '#4a9eff',
+        [TILES.STAIRS_UP]: '#4aff4a',
+        [TILES.TRAP]: '#ff4444',
+        [TILES.SPAWNER]: '#ff00ff',
+    };
+    
+    // 游戏状态
+    let gameState = {
+        map: [],
+        rooms: [],
+        width: 50,
+        height: 40,
+        cellSize: 16,
+        zoom: 1,
+        showLabels: false,
+        mazeMode: false,
+        player: {
+            x: 0,
+            y: 0,
+            hp: 100,
+            maxHp: 100,
+            gold: 0,
+            floor: 1,
+        },
+        enemies: [],
+        chests: [],
+        traps: [],
+    };
+    
+    // 简单的随机数生成器
+    function seededRandom(seed) {
+        let s = seed;
+        return () => {
+            s = (s * 1103515245 + 12345) & 0x7fffffff;
+            return s / 0x7fffffff;
+        };
+    }
+    
+    // 地牢生成器
+    class DungeonGenerator {
+        constructor(config) {
+            this.width = config.width || 50;
+            this.height = config.height || 40;
+            this.roomMinSize = config.roomMinSize || 6;
+            this.roomMaxSize = config.roomMaxSize || 14;
+            this.maxRooms = config.maxRooms || 20;
+            this.rng = seededRandom(config.seed || Date.now());
+        }
+        
+        generate() {
+            // 初始化地图（墙壁）
+            this.map = Array(this.height).fill(null).map(() => 
+                Array(this.width).fill(TILES.WALL)
+            );
+            this.rooms = [];
+            
+            // 生成房间
+            for (let i = 0; i < this.maxRooms * 3; i++) {
+                if (this.rooms.length >= this.maxRooms) break;
+                
+                const room = this.createRoom();
+                if (this.canPlaceRoom(room)) {
+                    this.placeRoom(room);
+                    this.rooms.push(room);
+                }
+            }
+            
+            // 连接房间
+            this.connectRooms();
+            
+            // 添加特殊元素
+            this.addSpecialElements();
+            
+            return { map: this.map, rooms: this.rooms };
+        }
+        
+        createRoom() {
+            const w = Math.floor(this.rng() * (this.roomMaxSize - this.roomMinSize + 1)) + this.roomMinSize;
+            const h = Math.floor(this.rng() * (this.roomMaxSize - this.roomMinSize + 1)) + this.roomMinSize;
+            const x = Math.floor(this.rng() * (this.width - w - 2)) + 1;
+            const y = Math.floor(this.rng() * (this.height - h - 2)) + 1;
+            return { x, y, w, h, cx: Math.floor(x + w/2), cy: Math.floor(y + h/2) };
+        }
+        
+        canPlaceRoom(room) {
+            for (let dy = -1; dy <= room.h; dy++) {
+                for (let dx = -1; dx <= room.w; dx++) {
+                    const ny = room.y + dy;
+                    const nx = room.x + dx;
+                    if (ny >= 0 && ny < this.height && nx >= 0 && nx < this.width) {
+                        if (this.map[ny][nx] === TILES.FLOOR) return false;
+                    }
+                }
+            }
+            return true;
+        }
+        
+        placeRoom(room) {
+            for (let y = room.y; y < room.y + room.h; y++) {
+                for (let x = room.x; x < room.x + room.w; x++) {
+                    this.map[y][x] = TILES.FLOOR;
+                }
+            }
+        }
+        
+        connectRooms() {
+            for (let i = 1; i < this.rooms.length; i++) {
+                this.createCorridor(
+                    this.rooms[i-1].cx, this.rooms[i-1].cy,
+                    this.rooms[i].cx, this.rooms[i].cy
+                );
+            }
+            
+            // 添加随机连接
+            for (let i = 0; i < Math.floor(this.rooms.length / 3); i++) {
+                const a = this.rooms[Math.floor(this.rng() * this.rooms.length)];
+                const b = this.rooms[Math.floor(this.rng() * this.rooms.length)];
+                if (a !== b) {
+                    this.createCorridor(a.cx, a.cy, b.cx, b.cy);
+                }
+            }
+        }
+        
+        createCorridor(x1, y1, x2, y2) {
+            let x = x1, y = y1;
+            
+            if (this.rng() > 0.5) {
+                while (x !== x2) { this.map[y][x] = TILES.FLOOR; x += x < x2 ? 1 : -1; }
+                while (y !== y2) { this.map[y][x] = TILES.FLOOR; y += y < y2 ? 1 : -1; }
+            } else {
+                while (y !== y2) { this.map[y][x] = TILES.FLOOR; y += y < y2 ? 1 : -1; }
+                while (x !== x2) { this.map[y][x] = TILES.FLOOR; x += x < x2 ? 1 : -1; }
+            }
+            this.map[y][x] = TILES.FLOOR;
+        }
+        
+        addSpecialElements() {
+            if (this.rooms.length < 2) return;
+            
+            // 楼梯
+            this.map[this.rooms[0].cy][this.rooms[0].cx] = TILES.STAIRS_UP;
+            this.map[this.rooms[this.rooms.length-1].cy][this.rooms[this.rooms.length-1].cx] = TILES.STAIRS_DOWN;
+            
+            // 宝箱
+            for (let i = 0; i < 3 + Math.floor(this.rng() * 3); i++) {
+                const room = this.rooms[Math.floor(this.rng() * this.rooms.length)];
+                const cx = room.x + Math.floor(this.rng() * room.w);
+                const cy = room.y + Math.floor(this.rng() * room.h);
+                if (this.map[cy][cx] === TILES.FLOOR) {
+                    this.map[cy][cx] = TILES.CHEST;
+                }
+            }
+            
+            // 陷阱
+            for (let i = 0; i < 5 + Math.floor(this.rng() * 5); i++) {
+                const room = this.rooms[Math.floor(this.rng() * this.rooms.length)];
+                const cx = room.x + Math.floor(this.rng() * room.w);
+                const cy = room.y + Math.floor(this.rng() * room.h);
+                if (this.map[cy][cx] === TILES.FLOOR) {
+                    this.map[cy][cx] = TILES.TRAP;
+                }
+            }
+            
+            // 敌人
+            for (let i = 1; i < this.rooms.length - 1; i++) {
+                if (this.rng() > 0.4) {
+                    this.map[this.rooms[i].cy][this.rooms[i].cx] = TILES.SPAWNER;
+                }
+            }
+        }
+        
+        getSpawnPoint() {
+            return this.rooms.length > 0 
+                ? { x: this.rooms[0].cx, y: this.rooms[0].cy }
+                : { x: Math.floor(this.width/2), y: Math.floor(this.height/2) };
+        }
+    }
+    
+    // 迷宫生成器
+    class MazeGenerator {
+        constructor(width, height, seed) {
+            this.width = width % 2 === 0 ? width + 1 : width;
+            this.height = height % 2 === 0 ? height + 1 : height;
+            this.rng = seededRandom(seed || Date.now());
+        }
+        
+        generate() {
+            this.map = Array(this.height).fill(null).map(() => 
+                Array(this.width).fill(TILES.WALL)
+            );
+            
+            this.carve(1, 1);
+            this.map[1][0] = TILES.DOOR;
+            this.map[this.height-2][this.width-1] = TILES.DOOR;
+            
+            // 添加特殊元素
+            this.addElements();
+            
+            return { map: this.map, rooms: [{ cx: 1, cy: 1 }] };
+        }
+        
+        carve(x, y) {
+            this.map[y][x] = TILES.FLOOR;
+            
+            const dirs = [[0,-2],[0,2],[-2,0],[2,0]].sort(() => this.rng() - 0.5);
+            
+            for (const [dx, dy] of dirs) {
+                const nx = x + dx, ny = y + dy;
+                if (nx > 0 && nx < this.width-1 && ny > 0 && ny < this.height-1) {
+                    if (this.map[ny][nx] === TILES.WALL) {
+                        this.map[y + dy/2][x + dx/2] = TILES.FLOOR;
+                        this.carve(nx, ny);
+                    }
+                }
+            }
+        }
+        
+        addElements() {
+            let placed = 0;
+            for (let y = 1; y < this.height-1 && placed < 5; y++) {
+                for (let x = 1; x < this.width-1 && placed < 5; x++) {
+                    if (this.map[y][x] === TILES.FLOOR && this.rng() > 0.97) {
+                        this.map[y][x] = this.rng() > 0.5 ? TILES.CHEST : TILES.SPAWNER;
+                        placed++;
+                    }
+                }
+            }
+            this.map[this.height-2][this.width-2] = TILES.STAIRS_DOWN;
+        }
+        
+        getSpawnPoint() {
+            return { x: 1, y: 1 };
+        }
+    }
+    
+    // ==================== 渲染 ====================
+    
+    const canvas = document.getElementById('map-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function render() {
+        const size = Math.floor(gameState.cellSize * gameState.zoom);
+        canvas.width = gameState.width * size;
+        canvas.height = gameState.height * size;
+        
+        // 清除
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // 绘制瓦片
+        for (let y = 0; y < gameState.height; y++) {
+            for (let x = 0; x < gameState.width; x++) {
+                const tile = gameState.map[y]?.[x] ?? TILES.VOID;
+                
+                // 基础颜色
+                ctx.fillStyle = TILE_COLORS[tile];
+                ctx.fillRect(x * size, y * size, size, size);
+                
+                // 特殊效果
+                if (tile === TILES.CHEST) {
+                    ctx.fillStyle = '#b8860b';
+                    ctx.fillRect(x * size + size*0.2, y * size + size*0.2, size*0.6, size*0.6);
+                    ctx.fillStyle = '#ffd700';
+                    ctx.fillRect(x * size + size*0.35, y * size + size*0.35, size*0.3, size*0.3);
+                } else if (tile === TILES.TRAP) {
+                    ctx.fillStyle = '#aa0000';
+                    ctx.beginPath();
+                    ctx.moveTo(x * size + size*0.5, y * size + size*0.2);
+                    ctx.lineTo(x * size + size*0.8, y * size + size*0.8);
+                    ctx.lineTo(x * size + size*0.2, y * size + size*0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                } else if (tile === TILES.SPAWNER) {
+                    ctx.fillStyle = '#ff00ff';
+                    ctx.beginPath();
+                    ctx.arc(x * size + size*0.5, y * size + size*0.5, size*0.35, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(x * size + size*0.4, y * size + size*0.4, size*0.1, 0, Math.PI * 2);
+                    ctx.arc(x * size + size*0.6, y * size + size*0.4, size*0.1, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (tile === TILES.STAIRS_DOWN) {
+                    ctx.fillStyle = '#1e3a5f';
+                    ctx.fillRect(x * size + size*0.2, y * size + size*0.2, size*0.6, size*0.6);
+                    ctx.fillStyle = '#4a9eff';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillRect(x * size + size*0.25, y * size + size*(0.25 + i*0.2), size*0.5, size*0.1);
+                    }
+                } else if (tile === TILES.STAIRS_UP) {
+                    ctx.fillStyle = '#1e5f1e';
+                    ctx.fillRect(x * size + size*0.2, y * size + size*0.2, size*0.6, size*0.6);
+                    ctx.fillStyle = '#4aff4a';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillRect(x * size + size*0.25, y * size + size*(0.65 - i*0.2), size*0.5, size*0.1);
+                    }
+                } else if (tile === TILES.DOOR) {
+                    ctx.fillStyle = '#654321';
+                    ctx.fillRect(x * size + size*0.3, y * size + size*0.1, size*0.4, size*0.8);
+                } else if (tile === TILES.FLOOR && gameState.zoom >= 1) {
+                    // 地板纹理
+                    if ((x + y) % 2 === 0) {
+                        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+                        ctx.fillRect(x * size, y * size, size, size);
+                    }
+                }
+                
+                // 网格线
+                if (gameState.zoom >= 2) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                    ctx.strokeRect(x * size, y * size, size, size);
+                }
+            }
+        }
+        
+        // 绘制玩家
+        const px = gameState.player.x * size + size/2;
+        const py = gameState.player.y * size + size/2;
+        
+        // 玩家阴影
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.beginPath();
+        ctx.ellipse(px, py + size*0.4, size*0.3, size*0.15, 0, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 玩家身体
+        ctx.fillStyle = '#4ade80';
+        ctx.beginPath();
+        ctx.arc(px, py, size*0.4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 玩家眼睛
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(px - size*0.12, py - size*0.05, size*0.1, 0, Math.PI * 2);
+        ctx.arc(px + size*0.12, py - size*0.05, size*0.1, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#000';
+        ctx.beginPath();
+        ctx.arc(px - size*0.12, py - size*0.05, size*0.05, 0, Math.PI * 2);
+        ctx.arc(px + size*0.12, py - size*0.05, size*0.05, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 标签
+        if (gameState.showLabels) {
+            ctx.fillStyle = '#fff';
+            ctx.font = `${Math.max(10, size*0.4)}px monospace`;
+            ctx.textAlign = 'center';
+            ctx.fillText(`(${gameState.player.x},${gameState.player.y})`, px, py - size*0.6);
+        }
+        
+        // 更新UI
+        updateUI();
+    }
+    
+    function updateUI() {
+        document.getElementById('player-pos').textContent = 
+            `(${gameState.player.x}, ${gameState.player.y})`;
+        document.getElementById('player-hp').textContent = 
+            `${gameState.player.hp}/${gameState.player.maxHp}`;
+        document.getElementById('player-gold').textContent = gameState.player.gold;
+        document.getElementById('player-floor').textContent = gameState.player.floor;
+        
+        document.getElementById('dungeon-stats').innerHTML = `
+            <p>📐 尺寸: ${gameState.width} × ${gameState.height}</p>
+            <p>🚪 房间: ${gameState.rooms.length}</p>
+            <p>🗺️ 模式: ${gameState.mazeMode ? '迷宫' : '地牢'}</p>
+            <p>🔍 缩放: ${Math.round(gameState.zoom * 100)}%</p>
+        `;
+    }
+    
+    // ==================== 交互 ====================
+    
+    function regenerateDungeon() {
+        const generator = gameState.mazeMode
+            ? new MazeGenerator(50, 40, Date.now())
+            : new DungeonGenerator({ 
+                width: 50, 
+                height: 40, 
+                roomMinSize: 6, 
+                roomMaxSize: 14, 
+                maxRooms: 18,
+                seed: Date.now()
+            });
+        
+        const { map, rooms } = generator.generate();
+        gameState.map = map;
+        gameState.rooms = rooms;
+        gameState.width = gameState.mazeMode ? 51 : 50;
+        gameState.height = 40;
+        
+        const spawn = generator.getSpawnPoint();
+        gameState.player.x = spawn.x;
+        gameState.player.y = spawn.y;
+        
+        render();
+    }
+    
+    function toggleMaze() {
+        gameState.mazeMode = !gameState.mazeMode;
+        regenerateDungeon();
+    }
+    
+    function zoomIn() {
+        gameState.zoom = Math.min(4, gameState.zoom + 0.5);
+        render();
+    }
+    
+    function zoomOut() {
+        gameState.zoom = Math.max(0.5, gameState.zoom - 0.5);
+        render();
+    }
+    
+    function toggleLabels() {
+        gameState.showLabels = !gameState.showLabels;
+        render();
+    }
+    
+    // 键盘控制
+    document.addEventListener('keydown', (e) => {
+        const key = e.key.toLowerCase();
+        let dx = 0, dy = 0;
+        
+        if (key === 'w' || key === 'arrowup') dy = -1;
+        else if (key === 's' || key === 'arrowdown') dy = 1;
+        else if (key === 'a' || key === 'arrowleft') dx = -1;
+        else if (key === 'd' || key === 'arrowright') dx = 1;
+        else if (key === 'r') { regenerateDungeon(); return; }
+        else if (key === 'm') { toggleMaze(); return; }
+        else return;
+        
+        e.preventDefault();
+        
+        const nx = gameState.player.x + dx;
+        const ny = gameState.player.y + dy;
+        
+        // 检查碰撞
+        if (nx >= 0 && nx < gameState.width && ny >= 0 && ny < gameState.height) {
+            const tile = gameState.map[ny][nx];
+            if (tile !== TILES.WALL && tile !== TILES.VOID) {
+                // 检查特殊瓦片
+                if (tile === TILES.TRAP) {
+                    gameState.player.hp -= 10;
+                    if (gameState.player.hp <= 0) {
+                        alert('💀 你掉进了陷阱！游戏结束。');
+                        gameState.player.hp = gameState.player.maxHp;
+                    }
+                    gameState.map[ny][nx] = TILES.FLOOR; // 陷阱触发后消失
+                } else if (tile === TILES.CHEST) {
+                    gameState.player.gold += 10 + Math.floor(Math.random() * 20);
+                    gameState.map[ny][nx] = TILES.FLOOR;
+                }
+                
+                gameState.player.x = nx;
+                gameState.player.y = ny;
+                render();
+            }
+        }
+    });
+    
+    // 初始化
+    regenerateDungeon();
+    
+    console.log('🗺️ 智障探险队 - 程序化地牢生成器');
+    console.log('控制: WASD/方向键移动, R重新生成, M切换模式');
+    </script>
+</body>
+</html>
