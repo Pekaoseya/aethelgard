@@ -36,6 +36,7 @@ export interface GameState {
 
 export interface NPCState {
   id: string
+  name: string
   position: { x: number; y: number }
   hp: number
   maxHp: number

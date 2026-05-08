@@ -51,10 +51,9 @@ export interface PerceptionItem {
 
 /** 可能的动作 */
 export type ActionType = 
-    | 'MOVE_UP' | 'MOVE_DOWN' | 'MOVE_LEFT' | 'MOVE_RIGHT'
-    | 'ATTACK' | 'USE_ITEM' | 'CAST_SKILL' | 'FLEE'
-    | 'PICKUP' | 'INTERACT' | 'FOLLOW' | 'COMMUNICATE'
-    | 'IDLE' | 'DEFEND';
+    | 'move' | 'attack' | 'pickup' | 'use_item' | 'talk'
+    | 'flee' | 'defend' | 'inspect' | 'interact' | 'follow'
+    | 'wait' | 'help' | 'cast_skill';
 
 /** 动作结构 */
 export interface Action {
@@ -63,6 +62,7 @@ export interface Action {
     item?: string;           // 使用的物品
     direction?: 'up' | 'down' | 'left' | 'right';
     message?: string;        // 对话内容
+    position?: Position;     // 当前位置
     confidence: number;      // 执行这个动作的置信度 0-100
 }
 
@@ -162,6 +162,22 @@ export interface DecisionContext {
     turnNumber: number;
     lastAction?: Action;
     lastActionOutcome?: 'success' | 'failure' | 'neutral';
+}
+
+// ============== 混沌系统 ==============
+
+/** 混沌动作类型 */
+export interface ChaosAction extends Action {
+    chaosType?: string;
+    chaosReason?: string;
+}
+
+/** 混沌配置文件 */
+export interface ChaosProfile {
+    id: string;
+    name: string;
+    baseChaosLevel: number;
+    emotionAmplifier: number;
 }
 
 export default {
