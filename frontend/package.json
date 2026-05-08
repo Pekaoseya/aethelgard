@@ -1,7 +1,7 @@
 {
   "name": "@stupid-adventure/frontend",
   "version": "1.0.0",
-  "description": "智障探险队 - RPG 游戏前端",
+  "description": "Aethelgard - RPG 游戏前端",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -9,8 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@rpgjs/client": "5.0.0-beta.6",
+    "@rpgjs/common": "5.0.0-beta.6",
+    "@rpgjs/server": "5.0.0-beta.6",
+    "@rpgjs/tiledmap": "5.0.0-beta.6",
+    "@rpgjs/ui-css": "5.0.0-beta.6",
+    "@signe/di": "^2.9.2",
+    "@signe/room": "^2.9.4",
+    "@signe/sync": "^2.9.4",
     "@vueuse/core": "^10.7.0",
     "pinia": "^2.1.0",
+    "pixi.js": "8",
     "vue": "^3.4.0"
   },
   "devDependencies": {
