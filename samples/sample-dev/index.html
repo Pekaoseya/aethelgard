@@ -1,26 +1,103 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>RPGJS Game</title>
-    <meta
-      name="viewport"
-      content="initial-scale=1, maximum-scale=1, user-scalable=no, minimum-scale=1, width=device-width, height=device-height"
-    />
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./node_modules/@rpgjs/ui-css/index.css">
-    <link rel="stylesheet" href="./node_modules/@rpgjs/ui-css/theme-default.css">
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智障探险队 - RPG-JS</title>
     <style>
-      body, #rpg {
-        margin: 0;
-        padding: 0;
-        height: 100vh;
-        width: 100vw;
-        overflow: hidden;
-      }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #1a1a2e; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+            font-family: system-ui, sans-serif;
+        }
+        #rpg-game { 
+            border: 4px solid #4a4a6a; 
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(100, 100, 200, 0.3);
+        }
+        #status {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            background: rgba(0,0,0,0.7);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        #status h3 { margin-bottom: 10px; color: #7fdbff; }
+        #status p { margin: 5px 0; }
     </style>
-  </head>
-  <body class="rpg-ui-app">
-    <div id="rpg"></div>
-  </body>
+</head>
+<body>
+    <div id="status">
+        <h3>RPG-JS 游戏</h3>
+        <p id="load-status">正在加载...</p>
+    </div>
+    <div id="rpg-game"></div>
+    
+    <script type="module">
+        import { RpgClient, RpgClientEngine } from 'rpg-js';
+        
+        // 等待 DOM 加载
+        document.addEventListener('DOMContentLoaded', async () => {
+            const statusEl = document.getElementById('load-status');
+            statusEl.textContent = '初始化 RPG-JS...';
+            
+            try {
+                // 创建 RPG 客户端实例
+                const rpg = new RpgClientEngine(RpgClient);
+                
+                statusEl.textContent = '启动游戏...';
+                
+                // 启动游戏
+                await rpg.start({
+                    element: '#rpg-game',
+                    // 服务器配置
+                    socket: {
+                        host: 'localhost',
+                        port: 1999
+                    },
+                    // 开发模式配置
+                    development: true,
+                    // 地图配置
+                    maps: [
+                        {
+                            name: 'test-map',
+                            file: '/map/test-map.json'
+                        }
+                    ],
+                    // 瓦片集配置
+                    tilesets: {
+                        'tiles_v2': {
+                            image: '/sprites/tiles_v2.png',
+                            tilewidth: 190,
+                            tileheight: 195,
+                            spacing: 55,
+                            margin: 15,
+                            columns: 5
+                        }
+                    },
+                    // 玩家配置
+                    player: {
+                        sprite: 'characters_v2',
+                        name: '智障探险家'
+                    }
+                });
+                
+                statusEl.textContent = '游戏已启动！';
+                statusEl.style.color = '#7fdbff';
+                
+            } catch (error) {
+                console.error('启动失败:', error);
+                statusEl.textContent = '启动失败: ' + error.message;
+                statusEl.style.color = '#ff6b6b';
+            }
+        });
+    </script>
+</body>
 </html>
