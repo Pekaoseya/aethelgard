@@ -13,7 +13,7 @@ function goBack() {
     <!-- RPG 游戏界面 - 主入口 -->
     <div v-if="currentView === 'rpg-game'" class="rpg-screen">
       <iframe 
-        src="/rpg-game/index.html" 
+        src="/src/rpg-game/index.html" 
         class="rpg-iframe"
         frameborder="0"
       ></iframe>

@@ -1,12 +1,13 @@
-import { provideClientGlobalConfig, provideClientModules, Presets } from "@rpgjs/client";
+import { provideClientGlobalConfig, provideClientModules, provideRpg, Presets } from "@rpgjs/client";
 import { provideTiledMap } from "@rpgjs/tiledmap/client";
+import { RpgServerEngine } from "@rpgjs/server";
 
 export default {
     providers: [
+        provideClientGlobalConfig(),
         provideTiledMap({
             basePath: '/rpg-game/maps',
         }),
-        provideClientGlobalConfig(),
         provideClientModules([
             {
                 spritesheets: [
@@ -22,6 +23,7 @@ export default {
                     }
                 ]
             }
-        ])
+        ]),
+        provideRpg(RpgServerEngine),
     ]
 };

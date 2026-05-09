@@ -1,3 +1,9 @@
 packages:
-  - 'backend/**'
-  - 'frontend'
+  - backend/**
+  - frontend
+
+ignoredBuiltDependencies:
+  - better-sqlite3
+  - esbuild
+  - vue-demi
+  - workerd
