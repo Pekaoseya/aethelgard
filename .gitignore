@@ -99,15 +99,6 @@ Desktop.ini
 
 .coze-logs
 
-# Images
-*.png
-*.jpg
-*.jpeg
-*.gif
-*.webp
-*.svg
-*.ico
-
 # Backup files
 *.bak
 *.backup
