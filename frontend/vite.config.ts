@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     vue(),
     tiledMapFolderPlugin({
-      sourceFolder: './src/rpg-game/tiled',
+      sourceFolder: './public/rpg-game/maps',
       publicPath: '/rpg-game/maps',
       buildOutputPath: 'assets/data'
     }),
