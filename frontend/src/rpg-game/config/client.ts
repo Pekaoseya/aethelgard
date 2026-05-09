@@ -6,7 +6,17 @@ export default {
         provideTiledMap({
             basePath: '/rpg-game/maps',
         }),
-        provideClientGlobalConfig(),
+        provideClientGlobalConfig({
+            defaultMap: 'map',
+            keyboardControls: {
+                up: 'up',
+                down: 'down',
+                left: 'left',
+                right: 'right',
+                action: 'space',
+                escape: 'escape'
+            }
+        }),
         provideClientModules([
             {
                 spritesheets: [

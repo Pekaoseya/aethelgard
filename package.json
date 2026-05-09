@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "MMO RPG 游戏世界 - Agent 通过 MCP 加入",
   "private": true,
+  "scripts": {
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build"
+  },
   "workspaces": [
     "backend/*",
     "frontend/*"
