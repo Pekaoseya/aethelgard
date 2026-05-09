@@ -4,9 +4,19 @@ import { RpgServerEngine } from "@rpgjs/server";
 
 export default {
     providers: [
-        provideClientGlobalConfig(),
         provideTiledMap({
             basePath: '/rpg-game/maps',
+        }),
+        provideClientGlobalConfig({
+            defaultMap: 'map',
+            keyboardControls: {
+                up: 'up',
+                down: 'down',
+                left: 'left',
+                right: 'right',
+                action: 'space',
+                escape: 'escape'
+            }
         }),
         provideClientModules([
             {
