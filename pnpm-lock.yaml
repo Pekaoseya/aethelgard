@@ -88,23 +88,23 @@ importers:
         specifier: 2.0.0-beta.61
         version: 2.0.0-beta.61
       '@rpgjs/client':
-        specifier: 5.0.0-beta.6
-        version: 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
       '@rpgjs/common':
-        specifier: 5.0.0-beta.6
-        version: 5.0.0-beta.6(react@19.2.6)
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7(react@19.2.6)
       '@rpgjs/server':
-        specifier: 5.0.0-beta.6
-        version: 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
       '@rpgjs/tiledmap':
-        specifier: 5.0.0-beta.6
-        version: 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@rpgjs/client@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/common@5.0.0-beta.6(react@19.2.6))(@rpgjs/server@5.0.0-beta.6(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/vite@5.0.0-beta.6(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3))(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@rpgjs/client@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/common@5.0.0-beta.7(react@19.2.6))(@rpgjs/server@5.0.0-beta.7(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/vite@5.0.0-beta.7(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3))(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))
       '@rpgjs/ui-css':
         specifier: 5.0.0-beta.6
         version: 5.0.0-beta.6
       '@rpgjs/vite':
-        specifier: 5.0.0-beta.6
-        version: 5.0.0-beta.6(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)
+        specifier: 5.0.0-beta.7
+        version: 5.0.0-beta.7(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)
       '@signe/di':
         specifier: ^2.9.2
         version: 2.9.2
@@ -907,43 +907,46 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rpgjs/client@5.0.0-beta.6':
-    resolution: {integrity: sha512-X5x7TBcoQIhIRh++nO4kLWyJgN3H+KZx/9e+iyR6I+g+SREP9z1afRWuEu/So0ZPhC+CuUDHuJALXvSwD8d5PA==}
+  '@rpgjs/client@5.0.0-beta.7':
+    resolution: {integrity: sha512-jPlULndG6AjM1eaMWX4yqkK38VlWNs73Mcyaz9r4mgtM5I6qbIGy2G/JdGViU0F5JRQNjxiOOAYy1K4KXL727w==}
     peerDependencies:
       '@canvasengine/presets': '*'
       canvasengine: '*'
       pixi.js: ^8.9.2
 
-  '@rpgjs/common@5.0.0-beta.6':
-    resolution: {integrity: sha512-eE5HCJPYsJgzicfBmikDiI7yUsw4q4FbWvmVibYWNIwKQR4/6FryUgqQRyAIOa7AJmhXE18qYsd6s41pSN2Xvw==}
+  '@rpgjs/common@5.0.0-beta.7':
+    resolution: {integrity: sha512-ckL0R62LxOC5zvjyCmK+oFQjPKzDMY+QV/kTCPuiASxgbKLR1h9bQGzBjgFu5XtEXSv9a2Ln69au7zRWpOI1Ig==}
 
   '@rpgjs/database@4.3.0':
     resolution: {integrity: sha512-XmF1gkdfbf8XOfvsCnwJ4bC3nk+ZqQaQnBrSYFndVQgmTEPD2RcgPutYm1KcsXDMhVmvFZSb/X7m1sK8ujdvSw==}
 
-  '@rpgjs/physic@5.0.0-beta.6':
-    resolution: {integrity: sha512-VqAGuKNDhfluvtc4jGFxAoUpnpgFkbsJDVJcLtyYE2NihUdzre7LTpEvP1AVqSWBiAW9WXwCL2aSc7eWsL5UUw==}
+  '@rpgjs/physic@5.0.0-beta.7':
+    resolution: {integrity: sha512-O5RF9tKLyLxzXRAolQwW54izB1a095wHzW/rUwq1tddn8NZLGtOF8aoAtihTynTDCsV9FWWscspOIlGLBqKJFA==}
 
-  '@rpgjs/server@5.0.0-beta.6':
-    resolution: {integrity: sha512-kpP8/MaXTa2PUCUpRj+K7LB8TkGbbl27KnM1DD/tqNHEyShyQvsXcvbtjeSXIIWQvKxqxWKYp3Xh9f5UfWD0ug==}
+  '@rpgjs/server@5.0.0-beta.7':
+    resolution: {integrity: sha512-4PI2/QuIM0/H963+3t0Gt7tNv++1DtN+vlmC6cGGZxlyVvDvkmBFwoXnQqaFT8+u/02PrI3hsKkdMzWk0tXkuA==}
 
-  '@rpgjs/testing@5.0.0-beta.6':
-    resolution: {integrity: sha512-l5AjBIrlHHXJ86qNHNzEiN6tiCrBkS4gdHAQ1WaarnaYZI9yKg3kwCYN1pq3f3U+Zkb9LoxYHJocJHNvTa4oUg==}
+  '@rpgjs/testing@5.0.0-beta.7':
+    resolution: {integrity: sha512-eDfhQBgLCNSVWzvfChcdDojoZPIqCT8O8qyOskQ62h0swfJAAQbrIgpQCh4mve1hXkcTefKotFAiZ2L12PEMKw==}
 
-  '@rpgjs/tiledmap@5.0.0-beta.6':
-    resolution: {integrity: sha512-rwmQgHAFGiEuzg3NkXzIcNpySaQ+ruVXWeB6tRhEqkNA0nUxrHsWre5Hy8PY8pSjLJ/EEsuJJbnwAeKBbdd80w==}
+  '@rpgjs/tiledmap@5.0.0-beta.7':
+    resolution: {integrity: sha512-c8Vi89kwMmxoTOdGDef8FvC5/0o0HD33377/hwNyCPRnXEWqOEBzlOxuwaGLBte/gZYQKc6rCrAOnDJ0X1MBtA==}
     peerDependencies:
       '@canvasengine/presets': '*'
-      '@rpgjs/client': 5.0.0-beta.6
-      '@rpgjs/common': 5.0.0-beta.6
-      '@rpgjs/server': 5.0.0-beta.6
-      '@rpgjs/vite': 5.0.0-beta.6
+      '@rpgjs/client': 5.0.0-beta.7
+      '@rpgjs/common': 5.0.0-beta.7
+      '@rpgjs/server': 5.0.0-beta.7
+      '@rpgjs/vite': 5.0.0-beta.7
       canvasengine: '*'
 
   '@rpgjs/ui-css@5.0.0-beta.6':
     resolution: {integrity: sha512-bUj0yFLxDRKcd9dT5+pPWsxWAUwuy+N6Q2Dr1FshRx+0PFi6iW2Knck/TBHDHj79cql4twVyWCHEf7qAzJTT0A==}
 
-  '@rpgjs/vite@5.0.0-beta.6':
-    resolution: {integrity: sha512-O4f8ZR4pxhn59EZsz9v/Sa7Fn3OP/4nsg6rHASgpKFkRsSvIyDFqAZZ6qdoLIyF3G04BlIOaYAuwzVUkOZEBlg==}
+  '@rpgjs/ui-css@5.0.0-beta.7':
+    resolution: {integrity: sha512-swqseFzZQdkXIxEmdZ9WsEqcOelQZPeJva/nRBdar3jHRD0D2BkYppY61/h2CpvrKlQQCO87Idsvuyg3R40bWA==}
+
+  '@rpgjs/vite@5.0.0-beta.7':
+    resolution: {integrity: sha512-Yruo1A2ZG84wI02npr244JxdRwthrVzPmtcFJDYUleAhLP/ES0ZH0n3eSsihVBe8D3AasVw3NA1wrdU42pzlkQ==}
 
   '@rushstack/node-core-library@5.23.1':
     resolution: {integrity: sha512-wlKmIKIYCKuCASbITvOxLZXepPbwXvrv7S6ig6XNWFchSyhL/E2txmVXspHY49Wu2dzf7nI27a2k/yV5BA3EiA==}
@@ -975,14 +978,26 @@ packages:
   '@rushstack/ts-command-line@5.3.9':
     resolution: {integrity: sha512-GIHqU+sRGQ3LGWAZu1O+9Yh++qwtyNIIGuNbcWHJjBTm2qRez0cwINUHZ+pQLR8UuzZDcMajrDaNbUYoaL/XtQ==}
 
+  '@signe/di@2.10.0':
+    resolution: {integrity: sha512-uoJapYblpjguWIsUv3cSZXXtiAor0g2YJuDDfn9rQyzD+527ZZqgy7MqkX0CwcKXiX8Qr4c/Vsqnu/tPUio0MA==}
+
   '@signe/di@2.9.2':
     resolution: {integrity: sha512-XczOVx7zbGjSrwI1IKZaTnU9TsNPzFFodexlSJ0kVUY3y2YLBeAH3LuapjVxFCP/kronxiua4/gmI02GdvJIUA==}
+
+  '@signe/reactive@2.10.0':
+    resolution: {integrity: sha512-JmGxTS1C5C2jrB3vxnQXVuoiHgUNeAOJQ1uRS5pnAfo3qN/LJhFKmnHXBntdN5ypQSqLHoM6zDZhkhGFQYvHAQ==}
 
   '@signe/reactive@2.9.2':
     resolution: {integrity: sha512-2isDHIH01HHTq5wgVMuuZsyVkWykIYZJ/zf1/o/q5/7J5JjO3OIpLra+OxSNS5WmpRF9CNWoBY7tzq3eDFyk6Q==}
 
+  '@signe/room@2.10.0':
+    resolution: {integrity: sha512-AGJ/28numjPyhclw/wOZcYJz1Tb+ZVeDnQYy1gKN3deYb6RBCKYbLX3X0YEme5Z33XlxIum5Aq341dXsb+nQQA==}
+
   '@signe/room@2.9.4':
     resolution: {integrity: sha512-9HO5OilTpxrnH3ewjqhHYXpGYLjglYBgP6m3ywQcMNi/R2zpxz07li6/kwgseSiZYxU2NaguuiTqiTg3lGY/eg==}
+
+  '@signe/sync@2.10.0':
+    resolution: {integrity: sha512-jGnAjtEGadaaPNwP3nfL6aewSWDMilHonfDSA2aoAXZtaQxQP1vAV5rstoOqQAp2VivwmWXZ4fdneDsfjpvdBw==}
 
   '@signe/sync@2.9.4':
     resolution: {integrity: sha512-CbJhRj7QY/Wuj8uYWSMJ2/XEwcmPvsUXmkg0YblCgD6R1I9xVI+pO//nNjgDWhnAJG/s4uVjL/42bVd9ozGg7w==}
@@ -3499,15 +3514,15 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.3':
     optional: true
 
-  '@rpgjs/client@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
+  '@rpgjs/client@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
     dependencies:
       '@canvasengine/presets': 2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)
-      '@rpgjs/common': 5.0.0-beta.6(react@19.2.6)
-      '@rpgjs/server': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/ui-css': 5.0.0-beta.6
-      '@signe/di': 2.9.2
-      '@signe/room': 2.9.4(react@19.2.6)
-      '@signe/sync': 2.9.4(react@19.2.6)
+      '@rpgjs/common': 5.0.0-beta.7(react@19.2.6)
+      '@rpgjs/server': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/ui-css': 5.0.0-beta.7
+      '@signe/di': 2.10.0
+      '@signe/room': 2.10.0(react@19.2.6)
+      '@signe/sync': 2.10.0(react@19.2.6)
       canvasengine: 2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)
       pixi-filters: 6.1.5(pixi.js@8.18.1)
       pixi.js: 8.18.1
@@ -3517,15 +3532,15 @@ snapshots:
       - react
       - vitest
 
-  '@rpgjs/client@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
+  '@rpgjs/client@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
     dependencies:
       '@canvasengine/presets': 2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)
-      '@rpgjs/common': 5.0.0-beta.6(react@19.2.6)
-      '@rpgjs/server': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/ui-css': 5.0.0-beta.6
-      '@signe/di': 2.9.2
-      '@signe/room': 2.9.4(react@19.2.6)
-      '@signe/sync': 2.9.4(react@19.2.6)
+      '@rpgjs/common': 5.0.0-beta.7(react@19.2.6)
+      '@rpgjs/server': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/ui-css': 5.0.0-beta.7
+      '@signe/di': 2.10.0
+      '@signe/room': 2.10.0(react@19.2.6)
+      '@signe/sync': 2.10.0(react@19.2.6)
       canvasengine: 2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)
       pixi-filters: 6.1.5(pixi.js@8.18.1)
       pixi.js: 8.18.1
@@ -3535,9 +3550,9 @@ snapshots:
       - react
       - vitest
 
-  '@rpgjs/common@5.0.0-beta.6(react@19.2.6)':
+  '@rpgjs/common@5.0.0-beta.7(react@19.2.6)':
     dependencies:
-      '@rpgjs/physic': 5.0.0-beta.6
+      '@rpgjs/physic': 5.0.0-beta.7
       '@signe/di': 2.9.2
       '@signe/reactive': 2.9.2
       '@signe/sync': 2.9.4(react@19.2.6)
@@ -3547,19 +3562,19 @@ snapshots:
 
   '@rpgjs/database@4.3.0': {}
 
-  '@rpgjs/physic@5.0.0-beta.6': {}
+  '@rpgjs/physic@5.0.0-beta.7': {}
 
-  '@rpgjs/server@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
+  '@rpgjs/server@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
     dependencies:
-      '@canvasengine/tiled': 2.0.0-beta.58
-      '@rpgjs/common': 5.0.0-beta.6(react@19.2.6)
+      '@canvasengine/tiled': 2.0.0-beta.61
+      '@rpgjs/common': 5.0.0-beta.7(react@19.2.6)
       '@rpgjs/database': 4.3.0
-      '@rpgjs/physic': 5.0.0-beta.6
-      '@rpgjs/testing': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@signe/di': 2.9.2
-      '@signe/reactive': 2.9.2
-      '@signe/room': 2.9.4(react@19.2.6)
-      '@signe/sync': 2.9.4(react@19.2.6)
+      '@rpgjs/physic': 5.0.0-beta.7
+      '@rpgjs/testing': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@signe/di': 2.10.0
+      '@signe/reactive': 2.10.0
+      '@signe/room': 2.10.0(react@19.2.6)
+      '@signe/sync': 2.10.0(react@19.2.6)
       rxjs: 7.8.2
       zod: 4.4.3
     transitivePeerDependencies:
@@ -3569,11 +3584,11 @@ snapshots:
       - react
       - vitest
 
-  '@rpgjs/testing@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
+  '@rpgjs/testing@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))':
     dependencies:
       '@canvasengine/testing': 2.0.0-beta.58(canvasengine@2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/client': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/server': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/client': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/server': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
       '@signe/di': 2.9.2
       canvasengine: 2.0.0-beta.58(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)
       rxjs: 7.8.2
@@ -3585,24 +3600,26 @@ snapshots:
       - react
       - vitest
 
-  '@rpgjs/tiledmap@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@rpgjs/client@5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/common@5.0.0-beta.6(react@19.2.6))(@rpgjs/server@5.0.0-beta.6(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/vite@5.0.0-beta.6(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3))(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))':
+  '@rpgjs/tiledmap@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@rpgjs/client@5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/common@5.0.0-beta.7(react@19.2.6))(@rpgjs/server@5.0.0-beta.7(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0))))(@rpgjs/vite@5.0.0-beta.7(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3))(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))':
     dependencies:
       '@canvasengine/presets': 2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)
       '@canvasengine/tiled': 2.0.0-beta.61
-      '@rpgjs/client': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/common': 5.0.0-beta.6(react@19.2.6)
-      '@rpgjs/server': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
-      '@rpgjs/vite': 5.0.0-beta.6(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)
+      '@rpgjs/client': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/common': 5.0.0-beta.7(react@19.2.6)
+      '@rpgjs/server': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/vite': 5.0.0-beta.7(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)
       canvasengine: 2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)
 
   '@rpgjs/ui-css@5.0.0-beta.6': {}
 
-  '@rpgjs/vite@5.0.0-beta.6(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)':
+  '@rpgjs/ui-css@5.0.0-beta.7': {}
+
+  '@rpgjs/vite@5.0.0-beta.7(@types/react@19.2.14)(esbuild@0.27.7)(hono@4.12.18)(miniflare@3.20240718.0)(pixi.js@8.18.1)(react@19.2.6)(rollup@4.60.3)':
     dependencies:
       '@canvasengine/compiler': 2.0.0-beta.58(@types/node@25.6.2)(esbuild@0.27.7)
       '@canvasengine/tiled': 2.0.0-beta.58
       '@hono/vite-dev-server': 0.25.3(hono@4.12.18)(miniflare@3.20240718.0)
-      '@rpgjs/server': 5.0.0-beta.6(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
+      '@rpgjs/server': 5.0.0-beta.7(@canvasengine/presets@2.0.0-beta.61(canvasengine@2.0.0-beta.61(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6))(pixi.js@8.18.1))(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(vitest@4.1.5(@types/node@25.6.2)(vite@5.4.21(@types/node@25.6.2)(lightningcss@1.32.0)))
       '@types/node': 25.6.2
       acorn: 8.16.0
       acorn-walk: 8.3.5
@@ -3685,11 +3702,26 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
+  '@signe/di@2.10.0': {}
+
   '@signe/di@2.9.2': {}
+
+  '@signe/reactive@2.10.0':
+    dependencies:
+      rxjs: 7.8.2
 
   '@signe/reactive@2.9.2':
     dependencies:
       rxjs: 7.8.2
+
+  '@signe/room@2.10.0(react@19.2.6)':
+    dependencies:
+      '@signe/sync': 2.10.0(react@19.2.6)
+      dset: 3.1.4
+      partysocket: 1.1.18(react@19.2.6)
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - react
 
   '@signe/room@2.9.4(react@19.2.6)':
     dependencies:
@@ -3697,6 +3729,14 @@ snapshots:
       dset: 3.1.4
       partysocket: 1.1.18(react@19.2.6)
       zod: 3.25.76
+    transitivePeerDependencies:
+      - react
+
+  '@signe/sync@2.10.0(react@19.2.6)':
+    dependencies:
+      '@signe/reactive': 2.10.0
+      partysocket: 1.1.18(react@19.2.6)
+      rxjs: 7.8.2
     transitivePeerDependencies:
       - react
 
@@ -4211,7 +4251,7 @@ snapshots:
     dependencies:
       '@barvynkoa/particle-emitter': 0.0.1(pixi.js@8.18.1)
       '@pixi/layout': 3.2.0(@types/react@19.2.14)(pixi.js@8.18.1)(react@19.2.6)(yoga-layout@3.2.1)
-      '@signe/reactive': 2.9.2
+      '@signe/reactive': 2.10.0
       howler: 2.2.4
       joypad.js: 2.3.5
       pixi-filters: 6.1.5(pixi.js@8.18.1)
