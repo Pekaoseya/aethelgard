@@ -1,4 +1,7 @@
 .next
+.agents
+.trae
+skills-lock.json
 
 # Dependencies
 node_modules/
