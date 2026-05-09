@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Aethelgard - RPG 游戏前端",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
