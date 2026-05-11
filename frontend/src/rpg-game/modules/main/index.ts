@@ -1,8 +1,8 @@
-import { createModule } from "@rpgjs/common";
-import server from "./server";
+import { createModule } from "@rpgjs/common"
+import server from "./server"
 
 export function provideMain() {
-    return createModule('main', [{
+    return createModule("main", [{
         server
     }])
 }
